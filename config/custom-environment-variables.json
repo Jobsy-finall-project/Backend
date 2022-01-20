@@ -1,0 +1,4 @@
+{
+  "jwtPrivateKey": "jobsy_jwtPrivateKey",
+  "db": "jobsy_db"
+}
