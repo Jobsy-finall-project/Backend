@@ -1,15 +1,17 @@
 const mongoose = require("mongoose");
+const Joi = require("joi");
+Joi.ObjectId = require("joi-objectid")(Joi);
 
 const stepSchema = new mongoose.Schema({
   title: {
     type: String,
     minlength: 1,
-    maxlength: 255,
+    maxlength: 75,
     required: true
   },
   description: {
     type: String,
-    minlength: 1,
+    minlength: 0,
     maxlength: 255
   },
   time: {
@@ -20,4 +22,22 @@ const stepSchema = new mongoose.Schema({
   comments: [String]
 });
 const Step = mongoose.model("Step", stepSchema);
-module.exports = { Step, stepSchema };
+
+function validateStep(position) {
+  const schema = Joi.object({
+    title: Joi.string()
+      .required()
+      .min(1)
+      .max(75),
+    description: Joi.string()
+      .min(0)
+      .max(255),
+    time: Joi.required(),
+    relatedEmails: Joi.array(),
+    comments: Joi.array()
+  });
+
+  return schema.validate(position);
+}
+
+module.exports = { Step, stepSchema, validateStep };
