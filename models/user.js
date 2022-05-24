@@ -39,25 +39,18 @@ const userSchema = new mongoose.Schema({
     minlength: 8,
     maxlength: 1024
   },
-  fakeEmail: {
-    type: String,
-    unique: {
-      function() {
-        return fakeEmail;
-      }
-    },
-    minlength: 10,
-    maxlength: 255,
-    lowercase: true
-  },
   role: {
     type: String,
-    enum: ["Anonymous", "User", "Admin"],
+    enum: ["Anonymous", "User", "Admin", "HR"],
     default: "Anonymous",
     required: true
   },
   applications: {
     type: [applicationSchema],
+    required: true
+  },
+  cvs: {
+    type: [cvSchema],
     required: true
   }
 });
@@ -100,11 +93,6 @@ function validateUser(user) {
       .regex(
         /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[*.!@$%^&{}:;<>,.?~_+-]).{8,32}$/
       ),
-    fakeEmail: Joi.string()
-      .min(10)
-      .max(255)
-      .lowercase()
-      .email(),
     role: Joi.string()
       .required()
       .valid(...Object.values(["Anonymous", "User", "Admin"]))
