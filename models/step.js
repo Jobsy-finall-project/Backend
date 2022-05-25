@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Joi = require("joi");
 Joi.ObjectId = require("joi-objectid")(Joi);
+const { emailSchema } = require("./email");
 
 const stepSchema = new mongoose.Schema({
   title: {
@@ -18,7 +19,10 @@ const stepSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  relatedEmails: [String],
+  relatedEmails: {
+    type: [emailSchema],
+    required: true
+  },
   comments: [String]
 });
 const Step = mongoose.model("Step", stepSchema);

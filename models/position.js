@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Joi = require("joi");
 Joi.ObjectId = require("joi-objectid")(Joi);
+const { stepSchema } = require("./step");
 
 const positionSchema = new mongoose.Schema({
   name: {
@@ -13,7 +14,10 @@ const positionSchema = new mongoose.Schema({
     type: String,
     minlength: 0,
     maxlength: 255
-  }
+  },
+  tags: [String],
+  tamplate: [stepSchema],
+  hrId:String
 });
 
 const Position = mongoose.model("Position", positionSchema);
@@ -26,7 +30,10 @@ function validatePosition(position) {
       .max(75),
     description: Joi.string()
       .min(0)
-      .max(255)
+      .max(255),
+    tags: Joi.array(),
+    tamplate: Joi.array(),
+    hrId: Joi.string()
   });
 
   return schema.validate(position);
