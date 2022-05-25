@@ -1,15 +1,15 @@
-const mongoose = require("mongoose");
-const Joi = require("joi");
+import mongoose from "mongoose";
+import Joi from "joi";
 
-const emailSchema = new mongoose.Schema({
+export const emailSchema = new mongoose.Schema({
   title: String,
   from: String,
   body: String,
 });
 
-const Email = mongoose.model("Email", emailSchema);
+export const Email = mongoose.model("Email", emailSchema);
 
-function validateEmail(email) {
+export function validateEmail(email) {
   const schema = Joi.object({
     title: Joi.string(),
     from: Joi.string(),
@@ -18,5 +18,3 @@ function validateEmail(email) {
 
   return schema.validate(email);
 }
-
-module.exports = { Email, emailSchema, validateEmail };

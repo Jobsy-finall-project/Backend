@@ -2,6 +2,8 @@
   "name": "express-demo",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
+
   "scripts": {
     "test": "jest --watchAll --verbose --coverage --maxWorkers=1",
     "start": "node index.js",

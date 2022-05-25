@@ -1,15 +1,15 @@
-const express = require("express");
-const helmet = require("helmet");
-const application = require("../routes/application");
-const company = require("../routes/company");
-const position = require("../routes/position");
-const step = require("../routes/step");
-const home = require("../routes/home");
-const user = require("../routes/user");
-const auth = require("../routes/auth");
-const error = require("../middleware/error");
-const methodOverride = require("method-override");
-const bodyParser = require("body-parser");
+import express from "express";
+import helmet from "helmet";
+import application from "../routes/application";
+import company from "../routes/company";
+import position from "../routes/position";
+import step from "../routes/step";
+import home from "../routes/home";
+import user from "../routes/user";
+import auth from "../routes/auth";
+import error from "../middleware/error";
+import methodOverride from "method-override";
+import bodyParser from "body-parser";
 
 module.exports = function(app) {
   app.use(express.json());

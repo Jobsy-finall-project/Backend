@@ -1,10 +1,10 @@
-const asyncMiddleware = require("../middleware/async");
-const auth = require("../middleware/auth");
-const express = require("express");
-const { User } = require("../models/user");
-const { Application } = require("../models/application");
-const { Step } = require("../models/step");
-const { validateStep } = require("../models/step");
+import asyncMiddleware from "../middleware/async";
+import auth from "../middleware/auth";
+import express from "express";
+import { User } from "../models/user";
+import { Application } from "../models/application";
+import { Step } from "../models/step";
+import { validateStep } from "../models/step";
 
 const router = express.Router();
 router.use(express.json());
@@ -161,4 +161,4 @@ router.put(
   })
 );
 
-module.exports = router;
+export default router;

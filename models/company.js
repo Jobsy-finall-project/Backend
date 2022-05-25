@@ -1,8 +1,8 @@
-const mongoose = require("mongoose");
-const { positionSchema } = require("./position");
-const Joi = require("joi");
+import mongoose from "mongoose";
+import { positionSchema }from "./position";
+import Joi from "joi";
 
-const companySchema = new mongoose.Schema({
+export const companySchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
@@ -19,9 +19,9 @@ const companySchema = new mongoose.Schema({
   }
 });
 
-const Company = mongoose.model("Company", companySchema);
+export const Company = mongoose.model("Company", companySchema);
 
-function validateCompany(company) {
+export function validateCompany(company) {
   const schema = Joi.object({
     name: Joi.string()
       .required()
@@ -36,4 +36,3 @@ function validateCompany(company) {
   return schema.validate(company);
 }
 
-module.exports = { Company, companySchema, validateCompany };

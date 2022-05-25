@@ -1,10 +1,10 @@
-const asyncMiddleware = require("../middleware/async");
-const auth = require("../middleware/auth");
-const express = require("express");
-const Joi = require("joi");
-Joi.ObjectId = require("joi-objectid")(Joi);
-const { Company } = require("../models/company");
-const { validateCompany } = require("../models/company");
+import asyncMiddleware from "../middleware/async";
+import auth from "../middleware/auth";
+import express from "express";
+import Joi from "joi";
+Joi.ObjectId from "joi-objectid"(Joi;
+import { Company } from "../models/company";
+import { validateCompany } from "../models/company";
 
 const router = express.Router();
 router.use(express.json());
@@ -87,4 +87,4 @@ router.put(
   })
 );
 
-module.exports = router;
+export default router;

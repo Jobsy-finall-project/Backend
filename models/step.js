@@ -1,9 +1,9 @@
-const mongoose = require("mongoose");
-const Joi = require("joi");
+import mongoose from "mongoose";
+import Joi from "joi";
 Joi.ObjectId = require("joi-objectid")(Joi);
-const { emailSchema } = require("./email");
+import emailSchema from "./email";
 
-const stepSchema = new mongoose.Schema({
+export const stepSchema = new mongoose.Schema({
   title: {
     type: String,
     minlength: 1,
@@ -25,9 +25,9 @@ const stepSchema = new mongoose.Schema({
   },
   comments: [String]
 });
-const Step = mongoose.model("Step", stepSchema);
+export const Step = mongoose.model("Step", stepSchema);
 
-function validateStep(position) {
+export function validateStep(position) {
   const schema = Joi.object({
     title: Joi.string()
       .required()
@@ -44,4 +44,3 @@ function validateStep(position) {
   return schema.validate(position);
 }
 
-module.exports = { Step, stepSchema, validateStep };

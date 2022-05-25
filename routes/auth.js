@@ -1,7 +1,7 @@
-const express = require("express");
-const Joi = require("joi");
-const { User } = require("../models/user");
-const bcrypt = require("bcrypt");
+import express from "express";
+import Joi from "joi";
+import { User } from "../models/user";
+import bcrypt from "bcrypt";
 
 
 const router = express.Router();
@@ -41,4 +41,4 @@ function validate(req) {
   return schema.validate(req);
 }
 
-module.exports = router;
+export default router;

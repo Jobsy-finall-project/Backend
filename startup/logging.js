@@ -1,6 +1,6 @@
-const winston = require("winston");
+import winston from "winston";
 //require("winston-mongodb");
-require("express-async-errors");
+import "express-async-errors";
 
 module.exports = function() {
   process.on("unhandledRejection", ex => {

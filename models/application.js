@@ -1,11 +1,11 @@
-const mongoose = require("mongoose");
-const { positionSchema } = require("./position");
-const { cvSchema } = require("./cv");
-const { emailSchema } = require("./email");
-const { stepSchema } = require("./step");
-const Joi = require("joi");
+import mongoose from "mongoose";
+import { positionSchema } from "./position");
+import { cvSchema } from "./cv";
+import { emailSchema } from "./email";
+import { stepSchema } from "./step";
+import Joi from "joi";
 
-const applicationSchema = new mongoose.Schema({
+export const applicationSchema = new mongoose.Schema({
   isFavorite: Boolean,
   isActive: Boolean,
   isMatch:Boolean,
@@ -26,9 +26,9 @@ const applicationSchema = new mongoose.Schema({
   companyName: String
 });
 
-const Application = mongoose.model("Application", applicationSchema);
+export const Application = mongoose.model("Application", applicationSchema);
 
-function validateApplication(application) {
+export function validateApplication(application) {
   const schema = Joi.object({
     isFavorite: Joi.boolean().default(false),
     isActive: Joi.boolean().default(true),
@@ -44,4 +44,3 @@ function validateApplication(application) {
   return schema.validate(application);
 }
 
-module.exports = { Application, applicationSchema, validateApplication };
