@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const config = require("config");
 const mongoose = require("mongoose");
 const { applicationSchema } = require("./application");
+const { cvSchema } = require("./cv");
 const Joi = require("joi");
 
 const userSchema = new mongoose.Schema({
@@ -9,13 +10,13 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     minlength: 2,
-    maxlength: 50
+    maxlength: 50,
   },
   lastName: {
     type: String,
     required: true,
     minlength: 2,
-    maxlength: 50
+    maxlength: 50,
   },
   userName: {
     type: String,
@@ -23,7 +24,7 @@ const userSchema = new mongoose.Schema({
     required: true,
     minlength: 2,
     maxlength: 50,
-    lowercase: true
+    lowercase: true,
   },
   email: {
     type: String,
@@ -31,31 +32,31 @@ const userSchema = new mongoose.Schema({
     required: true,
     minlength: 10,
     maxlength: 255,
-    lowercase: true
+    lowercase: true,
   },
   password: {
     type: String,
     required: true,
     minlength: 8,
-    maxlength: 1024
+    maxlength: 1024,
   },
   role: {
     type: String,
     enum: ["Anonymous", "User", "Admin", "HR"],
     default: "Anonymous",
-    required: true
+    required: true,
   },
   applications: {
     type: [applicationSchema],
-    required: true
+    required: true,
   },
   cvs: {
     type: [cvSchema],
-    required: true
-  }
+    required: true,
+  },
 });
 
-userSchema.methods.generateAuthToken = function() {
+userSchema.methods.generateAuthToken = function () {
   const token = jwt.sign(
     { _id: this._id, role: this.role },
     config.get("jwtPrivateKey")
@@ -67,25 +68,10 @@ const User = mongoose.model("User", userSchema);
 
 function validateUser(user) {
   const schema = Joi.object({
-    firstName: Joi.string()
-      .required()
-      .min(2)
-      .max(50),
-    lastName: Joi.string()
-      .required()
-      .min(2)
-      .max(50),
-    userName: Joi.string()
-      .required()
-      .min(2)
-      .max(50)
-      .lowercase(),
-    email: Joi.string()
-      .required()
-      .min(10)
-      .max(255)
-      .lowercase()
-      .email(),
+    firstName: Joi.string().required().min(2).max(50),
+    lastName: Joi.string().required().min(2).max(50),
+    userName: Joi.string().required().min(2).max(50).lowercase(),
+    email: Joi.string().required().min(10).max(255).lowercase().email(),
     password: Joi.string()
       .required()
       .min(8)
@@ -95,7 +81,7 @@ function validateUser(user) {
       ),
     role: Joi.string()
       .required()
-      .valid(...Object.values(["Anonymous", "User", "Admin"]))
+      .valid(...Object.values(["Anonymous", "User", "Admin"])),
   });
 
   return schema.validate(user);
