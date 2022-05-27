@@ -13,7 +13,7 @@ function validateCv(cv) {
   const schema = Joi.object({
     title: Joi.string(),
     cvFile: Joi.string(),
-    tags: Joi.array(),
+    tags: Joi.array().optional(),
   });
 
   return schema.validate(cv);
