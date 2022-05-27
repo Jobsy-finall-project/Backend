@@ -9,20 +9,22 @@ const applicationSchema = new mongoose.Schema({
   isFavorite: Boolean,
   isActive: Boolean,
   isMatch:Boolean,
-  position: {
-    type: positionSchema,
+  position: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref:"Position",
     required: true
-  },
-  cvFiles: {
-    type: [cvSchema],
+  }],
+  cvFiles: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref:"Cv",
     required: true
-  },
-  reletedEmails: {
-    type: [emailSchema],
-    required: true
-  },
+  }],
   comments: [String],
-  steps: [stepSchema],
+  steps: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref:"Step",
+    required: true
+  }],
   companyName: String
 });
 
@@ -35,7 +37,6 @@ function validateApplication(application) {
     isMatch: Joi.boolean().default(false),
     position: Joi.required(),
     cvFiles: Joi.array(),
-    reletedEmails: Joi.array(),
     comments: Joi.array(),
     steps: Joi.array(),
     companyName: Joi.string()

@@ -8,43 +8,23 @@ const { Position } = require("../models/position");
 const { validatePosition } = require("../models/position");
 const { User } = require("../models/user");
 const { max, minBy } = require("lodash");
+const {createPosition} = require("../services/position");
 
 const router = express.Router();
 router.use(express.json());
 
 router.post(
-    "/:companyId",
-    auth,
-    asyncMiddleware(async (req, res) => {
-        const { error } = validatePosition(req.body);
-        if (error) return res.status(400).send(error.details[0].message);
-
-        let position = {
-            name: req.body.name,
-            description: req.body.description,
-        };
-
-        let length;
-        let company;
-        if (req.params.companyId) {
-            company = await Company.findById(req.params.companyId);
-            if (company) {
-                length = company.positions.push(position);
-                await company.save();
-            } else {
-                return res
-                    .status(404)
-                    .send("The given company ID was not found.");
-            }
-        } else {
-            return res.status(400).send("Company ID is required.");
-        }
-
-        position = company.positions[length - 1];
-
-        res.send(position);
-    })
+  "/",
+  auth,
+  asyncMiddleware(async (req, res) => {
+      if (!req.user._id)
+          return res.status(404).send("This user is not logged in.");
+      let new_position =await createPosition(req.body);
+      res.send(new_position);
+  })
 );
+
+
 
 router.get(
     "/:companyId/:positionId",
