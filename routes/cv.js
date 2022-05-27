@@ -29,17 +29,13 @@ router.post(
             })
             .then(async (axiosRes) => {
                 if (axiosRes.status === 200) {
-                    console.log(axiosRes.data);
                     cv.tags = axiosRes.data;
 
-                    let user = await User.findOne({
-                        _id: req.user._id,
-                    });
-                    console.log(user);
+                    let user = await User.findById(req.user._id);
                     len = user.cvs.push(cv);
                     await user.save();
                 }
-                res.send(cv)
+                res.send(cv);
             });
     })
 );
