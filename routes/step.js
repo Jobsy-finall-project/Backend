@@ -5,53 +5,66 @@ const { User } = require("../models/user");
 const { Application } = require("../models/application");
 const { Step } = require("../models/step");
 const { validateStep } = require("../models/step");
+const { createStep } = require("../services/step");
+const {Position} = require("../models/position");
+
 
 const router = express.Router();
 router.use(express.json());
 
+//add step to position
 router.post(
-  "/:applicationId",
-  auth,
-  asyncMiddleware(async (req, res) => {
-    if (!req.user._id)
-      return res.status(404).send("This user is not logged in.");
+    "/:positionId",
+    auth,
+    asyncMiddleware(async (req, res) => {
+        const positionId=req.params.positionId;
+        if (!req.user._id)
+            res.status(404).send("This user is not logged in.");
+        const position= await Position.findById(positionId);
+        if(!position)
+            res.status(404).send("The position not found");
+        const new_step= await createStep(req.body);
 
-    let step = {
-      title: req.body.title,
-      description: req.body.description,
-      time: new Date(),
-      relatedEmails: req.body.relatedEmails,
-      comments: req.body.comments
-    };
-    const { error } = validateStep(step);
-    if (error) return res.status(400).send(error.details[0].message);
+        position._doc.template.push(new_step._doc._id);
+        position.save();
 
-    let length;
-    let application;
+        res.send(position.populate("template"));
+    }));
 
-    const user = await User.findById(req.user._id);
-
-    if (req.params.applicationId) {
-      application = user.applications.find(
-        application => application._id == req.params.applicationId
-      );
-
-      if (application) {
-        length = application.track.push(step);
-
-        await user.save();
-      } else {
-        return res.status(404).send("The given application ID was not found.");
-      }
-    } else {
-      return res.status(400).send("Application ID is required.");
-    }
-
-    step = application.track[length - 1];
-
-    res.send(step);
-  })
-);
+// router.post(
+//   "/:applicationId",
+//   auth,
+//   asyncMiddleware(async (req, res) => {
+//     if (!req.user._id)
+//       return res.status(404).send("This user is not logged in.");
+//
+//     const new_step= await createStep(req.body);
+//     let length;
+//     let application;
+//
+//     const user = await User.findById(req.user._id);
+//
+//     if (req.params.applicationId) {
+//       application = user.applications.find(
+//         application => application._id == req.params.applicationId
+//       );
+//
+//       if (application) {
+//         length = application.track.push(step);
+//
+//         await user.save();
+//       } else {
+//         return res.status(404).send("The given application ID was not found.");
+//       }
+//     } else {
+//       return res.status(400).send("Application ID is required.");
+//     }
+//
+//     step = application.track[length - 1];
+//
+//     res.send(step);
+//   })
+// );
 
 router.get(
   "/:applicationId/:stepId",

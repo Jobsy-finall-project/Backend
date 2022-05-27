@@ -4,7 +4,10 @@ const express = require("express");
 const Joi = require("joi");
 Joi.ObjectId = require("joi-objectid")(Joi);
 const { User } = require("../models/user");
-const { validateApplication } = require("../models/application");
+const { validateApplication, Application } = require("../models/application");
+const {Position, validatePosition} = require("../models/position");
+const {Cv} = require("../models/cv");
+
 
 const router = express.Router();
 router.use(express.json());
@@ -13,23 +16,54 @@ router.post(
   "/",
   auth,
   asyncMiddleware(async (req, res) => {
+      if (!req.user._id)
+          return res.status(404).send("This user is not logged in.");
+
+
+
+      const position =new Position({
+          name:req.body.position.name,
+          description:req.body.position.description,
+          tags:req.body.position.tags
+      });
+      //validate
+      let added_position= await position.save();
+      if(!added_position) return res.status(404).send("can't add this attached position");
+
+      const attached_cvs=req.body.cvFiles;
+      let inserted_cvs=[];
+      for(let currFile of attached_cvs){
+          let cv= new Cv({
+              title: currFile.title,
+              cvFile: currFile.cvFile,
+              tags: currFile.tags,
+          });
+          //validate
+          let added_cv=await cv.save();
+          if(!added_cv) return res.status(404).send("can't add this attached cv");
+          inserted_cvs.push(added_cv);
+      }
+
+
+
     let application = {
       isFavorite: req.body.isFavorite,
       isActive: req.body.isActive,
-      position: req.body.position,
+      isMatch: req.body.isMatch,
+      position: added_position,
       cvFiles: req.body.cvFiles,
       reletedEmails: req.body.reletedEmails,
       comments: req.body.comments,
-      track: req.body.treck
+      steps: req.body.steps
     };
 
     const { error } = validateApplication(application);
     if (error) return res.status(400).send(error.details[0].message);
 
-    if (!req.user._id)
-      return res.status(404).send("This user is not logged in.");
-
     const user = await User.findById(req.user._id);
+
+    const added_application= await Application.save();
+    if(!added_application) return res.status(404).send("can't add this attached application");
 
     const length = user.applications.push(application);
 
@@ -103,6 +137,67 @@ router.put(
     await user.save();
     res.send(application);
   })
+);
+
+router.post(
+    "/",
+    auth,
+    asyncMiddleware(async (req, res) => {
+        if (!req.user._id)
+            return res.status(404).send("This user is not logged in.");
+
+        const position =new Position({
+            name:req.body.position.name,
+            description:req.body.position.description,
+            tags:req.body.position.tags
+        });
+        //validate
+        let added_position= await position.save();
+        if(!added_position) return res.status(404).send("can't add this attached position");
+
+        const attached_cvs=req.body.cvFiles;
+        let inserted_cvs=[];
+        for(let currFile of attached_cvs){
+            let cv= new Cv({
+                title: currFile.title,
+                cvFile: currFile.cvFile,
+                tags: currFile.tags,
+            });
+            //validate
+            let added_cv=await cv.save();
+            if(!added_cv) return res.status(404).send("can't add this attached cv");
+            inserted_cvs.push(added_cv);
+        }
+
+
+
+        let application = {
+            isFavorite: req.body.isFavorite,
+            isActive: req.body.isActive,
+            isMatch: req.body.isMatch,
+            position: added_position,
+            cvFiles: req.body.cvFiles,
+            reletedEmails: req.body.reletedEmails,
+            comments: req.body.comments,
+            steps: req.body.steps
+        };
+
+        const { error } = validateApplication(application);
+        if (error) return res.status(400).send(error.details[0].message);
+
+        const user = await User.findById(req.user._id);
+
+        const added_application= await Application.save();
+        if(!added_application) return res.status(404).send("can't add this attached application");
+
+        const length = user.applications.push(application);
+
+        await user.save();
+
+        application = user.applications[length - 1];
+
+        res.send(application);
+    })
 );
 
 module.exports = router;

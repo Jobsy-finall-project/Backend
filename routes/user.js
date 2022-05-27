@@ -6,52 +6,24 @@ const express = require("express");
 const { User } = require("../models/user");
 const { validateUser } = require("../models/user");
 const bcrypt = require("bcrypt");
+const {createUser} = require("../services/user");
 
 const router = express.Router();
 
 router.post("/", async (req, res) => {
-  const { error } = validateUser(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
-
-  let user = await User.findOne({ email: req.body.email });
-  if (user) return res.status(409).send("this email is already exist.");
-
-  user = null;
-
-  user = await User.findOne({ userName: req.body.userName });
-  if (user) return res.status(409).send("this user name is already exist.");
-
-  if (req.body.fakeEmail !== undefined) {
-    user = null;
-    user = await User.findOne({ fakeEmail: req.body.fakeEmail });
-    if (user) return res.status(409).send("this fake email is already exist.");
-  }
-
-  user = new User({
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
-    userName: req.body.userName,
-    email: req.body.email,
-    password: req.body.password,
-    fakeEmail: req.body.fakeEmail,
-    role: req.body.role,
-    apllications: []
-  });
-
-  const salt = await bcrypt.genSalt(10);
-  user.password = await bcrypt.hash(user.password, salt);
-
-  user = await user.save();
-
-  const token = user.generateAuthToken();
-
+try {
+  const {token, inserted_user} = await createUser(req.body);
   res
-    .header("x-auth-token", token)
-    .send(_.pick(user, ["_id", "firstName", "lastName", "userName", "email"]));
+      .header("x-auth-token", token)
+      .send(_.pick(inserted_user, ["_id", "firstName", "lastName", "userName", "email"]));
+}catch (error){
+  res.status(400).send(error.message);
+}
+
 });
 
 router.get("/", [auth, admin], async (req, res) => {
-  const users = await User.find();
+  const users = await User.find().populate("applications").populate("cvs");
   res.send(users);
 });
 
@@ -62,7 +34,7 @@ router.get("/me", auth, async (req, res) => {
 });
 
 router.get("/:id", [validateObjectId, auth, admin], async (req, res) => {
-  const user = await User.findById({ _id: req.params.id }).select("-password");
+  const user = await User.findById({ _id: req.params.id }).select("-password").populate("applications");
   if (user) return res.send(user);
   return res.status(404).send("The user with the given ID was not found");
 });
@@ -77,17 +49,12 @@ router.put("/", auth, async (req, res) => {
 
   id = null;
 
-  id = await User.findOne({ email: req.body.userName }).select("_id");
+  id = await User.findOne({ userName: req.body.userName }).select("_id");
   if (id && id !== req.user._id)
     return res.status(409).send("this user name is already exist.");
 
-  if (req.body.fakeEmail !== undefined) {
-    id = null;
-    id = await User.findOne({ email: req.body.fakeEmail }).select("_id");
-    if (id && id !== req.user._id)
-      return res.status(409).send("this fake email is already exist.");
-  }
-
+  //cv insert to db
+  //get cv
   const user = await User.findByIdAndUpdate(
     req.user._id,
     {
@@ -96,8 +63,8 @@ router.put("/", auth, async (req, res) => {
         lastName: req.body.lastName,
         userName: req.body.userName,
         email: req.body.email,
-        password: req.body.password,
-        fakeEmail: req.body.fakeEmail
+        password: req.body.password
+        //cvs: [...getCvs, newcv ]
       }
     },
     { new: true }
@@ -115,16 +82,9 @@ router.put("/:id", [validateObjectId, auth, admin], async (req, res) => {
 
   id = null;
 
-  id = await User.findOne({ email: req.body.userName }).select("_id");
+  id = await User.findOne({ userName: req.body.userName }).select("_id");
   if (id && id !== req.user._id)
     return res.status(409).send("this user name is already exist.");
-
-  if (req.body.fakeEmail !== undefined) {
-    id = null;
-    id = await User.findOne({ email: req.body.fakeEmail }).select("_id");
-    if (id && id !== req.user._id)
-      return res.status(409).send("this fake email is already exist.");
-  }
 
   const user = await User.findByIdAndUpdate(
     req.params.id,
@@ -135,8 +95,9 @@ router.put("/:id", [validateObjectId, auth, admin], async (req, res) => {
         userName: req.body.userName,
         email: req.body.email,
         password: req.body.password,
-        fakeEmail: req.body.fakeEmail,
-        role: req.body.role
+        role: req.body.role,
+        applications:[],
+        cvs:[]
       }
     },
     { new: true }

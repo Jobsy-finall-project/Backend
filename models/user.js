@@ -46,14 +46,16 @@ const userSchema = new mongoose.Schema({
     default: "Anonymous",
     required: true,
   },
-  applications: {
-    type: [applicationSchema],
-    required: true,
-  },
-  cvs: {
-    type: [cvSchema],
-    required: true,
-  },
+  applications: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref:"Application",
+    required: true
+  }],
+  cvs: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref:"Cv",
+    required: true
+  }]
 });
 
 userSchema.methods.generateAuthToken = function () {
