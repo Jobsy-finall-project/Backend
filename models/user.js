@@ -68,20 +68,20 @@ const User = mongoose.model("User", userSchema);
 
 function validateUser(user) {
   const schema = Joi.object({
-    firstName: Joi.string().required().min(2).max(50),
-    lastName: Joi.string().required().min(2).max(50),
-    userName: Joi.string().required().min(2).max(50).lowercase(),
-    email: Joi.string().required().min(10).max(255).lowercase().email(),
-    password: Joi.string()
-      .required()
-      .min(8)
-      .max(32)
-      .regex(
-        /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[*.!@$%^&{}:;<>,.?~_+-]).{8,32}$/
-      ),
-    role: Joi.string()
-      .required()
-      .valid(...Object.values(["Anonymous", "User", "Admin"])),
+      firstName: Joi.string().required().min(2).max(50),
+      lastName: Joi.string().required().min(2).max(50),
+      userName: Joi.string().required().min(2).max(50).lowercase(),
+      email: Joi.string().required().min(10).max(255).lowercase().email(),
+      password: Joi.string()
+          .required()
+          .min(8)
+          .max(32)
+          .regex(
+              /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[*.!@$%^&{}:;<>,.?~_+-]).{8,32}$/
+          ),
+      role: Joi.string()
+          .required()
+          .valid(...Object.values(["Anonymous", "User", "Admin", "HR"])),
   });
 
   return schema.validate(user);

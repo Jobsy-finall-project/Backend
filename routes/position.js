@@ -127,12 +127,13 @@ router.put(
     })
 );
 
-router.app.get(
+router.get(
     "/suggestions/:companyId/:positionId",
     auth,
     asyncMiddleware(async (req, res) => {
         const company = await Company.findById(req.params.companyId);
         const count = parseInt(req.query.count) ? req.query.count : 10;
+        const userId = req.user._id;
 
         if (company) {
             if (company.positions) {
@@ -143,13 +144,16 @@ router.app.get(
                 if (position) {
                     let suggestedUsers = [];
                     const pageSize = 20;
-                    for (
-                        let page = 0;
-                        page * pageSize < (await User.count);
-                        page++
-                    ) {
-                        const users = User.find(
-                            {},
+                    const totalUsers = await User.count();
+                    console.log("we have:", totalUsers, "users");
+                    for (let page = 0; page * pageSize < totalUsers; page++) {
+                        const users = await User.find(
+                            {
+                                _id: {
+                                    $ne: userId,
+                                },
+                                role: "User",
+                            },
                             {
                                 _id: 1,
                                 firstName: 1,
@@ -166,7 +170,7 @@ router.app.get(
                             currUser.cvs.forEach((currCv) => {
                                 let cvScore = 0;
                                 currCv.tags.forEach((currTag) => {
-                                    if (position.tags.inclues(currTag)) {
+                                    if (position.tags.includes(currTag)) {
                                         cvScore++;
                                     }
                                 });
@@ -198,6 +202,7 @@ router.app.get(
                             }
                         });
                     }
+                    suggestedUsers.sort((a, b) => a.score - b.score);
                     res.send(suggestedUsers);
                 } else {
                     res.status(404).send("The givan position ID was not found");
