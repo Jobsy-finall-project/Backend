@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const config = require("config");
 const mongoose = require("mongoose");
 const { applicationSchema } = require("./application");
+const {cvSchema} = require("./cv");
 const Joi = require("joi");
 
 const userSchema = new mongoose.Schema({
@@ -45,14 +46,16 @@ const userSchema = new mongoose.Schema({
     default: "Anonymous",
     required: true
   },
-  applications: {
-    type: [applicationSchema],
+  applications: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref:"Application",
     required: true
-  },
-  cvs: {
-    type: [cvSchema],
+  }],
+  cvs: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref:"Cv",
     required: true
-  }
+  }]
 });
 
 userSchema.methods.generateAuthToken = function() {

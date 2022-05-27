@@ -16,18 +16,14 @@ const stepSchema = new mongoose.Schema({
     maxlength: 255
   },
   time: {
-    type: String,
-    required: true
-  },
-  relatedEmails: {
-    type: [emailSchema],
+    type: Date,
     required: true
   },
   comments: [String]
 });
 const Step = mongoose.model("Step", stepSchema);
 
-function validateStep(position) {
+function validateStep(step) {
   const schema = Joi.object({
     title: Joi.string()
       .required()
@@ -37,11 +33,10 @@ function validateStep(position) {
       .min(0)
       .max(255),
     time: Joi.required(),
-    relatedEmails: Joi.array(),
     comments: Joi.array()
   });
 
-  return schema.validate(position);
+  return schema.validate(step);
 }
 
 module.exports = { Step, stepSchema, validateStep };
