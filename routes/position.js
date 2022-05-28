@@ -73,6 +73,18 @@ router.post(
     })
 );
 
+router.post(
+    "/",
+    auth,
+    asyncMiddleware(async (req, res) => {
+        if (!req.user._id) {
+            return res.status(404).send("This user is not logged in.");
+        }
+        let new_position = await createPosition(req.body);
+        res.send(new_position);
+    })
+);
+
 router.get(
     "/:companyId/:positionId",
     auth,
@@ -95,18 +107,27 @@ router.get(
 );
 
 router.get(
-    "/:companyId",
+    "/:positionId",
     auth,
     asyncMiddleware(async (req, res) => {
-        const company = await Company.findById(req.params.companyId);
-        if (company && company.positions) {
-            return res.send(company.positions);
-        }
-        res.status(404).send(
-            "This company was not exist or it has no positions"
-        );
+        const positions = await Position.findById(req.params.positionId).populate("template");
+       res.json(positions);
     })
 );
+
+// router.get(
+//     "/:companyId",
+//     auth,
+//     asyncMiddleware(async (req, res) => {
+//         const company = await Company.findById(req.params.companyId);
+//         if (company && company.positions) {
+//             return res.send(company.positions);
+//         }
+//         res.status(404).send(
+//             "This company was not exist or it has no positions"
+//         );
+//     })
+// );
 
 router.delete(
     "/:companyId/:positionId",

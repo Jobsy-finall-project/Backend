@@ -7,16 +7,19 @@ const companySchema = new mongoose.Schema({
     type: String,
     required: true,
     minlength: 2,
-    maxlength: 75
+    maxlength: 75,
+    unique: true
   },
   description: {
     type: String,
     minlength: 0,
     maxlength: 255
   },
-  positions: {
-    type: [positionSchema]
-  }
+  positions: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref:"Position",
+    required: true
+  }]
 });
 
 const Company = mongoose.model("Company", companySchema);
@@ -30,7 +33,7 @@ function validateCompany(company) {
     description: Joi.string()
       .min(0)
       .max(255),
-    positions: Joi.array()
+    positions: Joi.array().optional()
   });
 
   return schema.validate(company);

@@ -24,6 +24,9 @@ async function createUser(user){
         applications:[],
         cvs:[]
     });
+    if (user.role === "hr"){
+        new_user.companyName=user.companyName;
+    }
 
     const salt = await bcrypt.genSalt(10);
     new_user.password = await bcrypt.hash(new_user.password, salt);
