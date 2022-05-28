@@ -55,7 +55,13 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref:"Cv",
     required: true
-  }]
+  }],
+  companyName:{
+    type: String,
+    required: false,
+    minlength: 2,
+    maxlength: 30,
+  }
 });
 
 userSchema.methods.generateAuthToken = function () {
@@ -84,6 +90,8 @@ function validateUser(user) {
       role: Joi.string()
           .required()
           .valid(...Object.values(["Anonymous", "User", "Admin", "HR"])),
+    applications: Joi.array(),
+    companyName: Joi.string().min(2).max(30)
   });
 
   return schema.validate(user);

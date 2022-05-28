@@ -14,18 +14,22 @@ const applicationSchema = new mongoose.Schema({
     ref:"Position",
     required: true
   }],
-  cvFiles: [{
+  cvFiles: {
     type: mongoose.Schema.Types.ObjectId,
     ref:"Cv",
-    required: true
-  }],
+    required: false
+  },
   comments: [String],
   steps: [{
     type: mongoose.Schema.Types.ObjectId,
     ref:"Step",
     required: true
   }],
-  companyName: String
+  company:  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref:"Company",
+    required: false
+  },
 });
 
 const Application = mongoose.model("Application", applicationSchema);
@@ -36,10 +40,10 @@ function validateApplication(application) {
     isActive: Joi.boolean().default(true),
     isMatch: Joi.boolean().default(false),
     position: Joi.required(),
-    cvFiles: Joi.array(),
+    cvFiles: Joi.optional(),
     comments: Joi.array(),
     steps: Joi.array(),
-    companyName: Joi.string()
+    company: Joi.optional()
   });
 
   return schema.validate(application);

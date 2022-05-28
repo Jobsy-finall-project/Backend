@@ -26,9 +26,9 @@ router.post(
         const new_step= await createStep(req.body);
 
         position._doc.template.push(new_step._doc._id);
-        position.save();
+        await position.save();
 
-        res.send(position.populate("template"));
+        res.send(new_step);
     }));
 
 // router.post(
