@@ -8,23 +8,23 @@ const { Position } = require("../models/position");
 const { validatePosition } = require("../models/position");
 const { User } = require("../models/user");
 const { max, minBy } = require("lodash");
-const {createPosition} = require("../services/position");
+const { createPosition } = require("../services/position");
+const { Cv } = require("../models/cv");
 
 const router = express.Router();
 router.use(express.json());
 
 router.post(
-  "/",
-  auth,
-  asyncMiddleware(async (req, res) => {
-      if (!req.user._id)
-          return res.status(404).send("This user is not logged in.");
-      let new_position =await createPosition(req.body);
-      res.send(new_position);
-  })
+    "/:companyID",
+    auth,
+    asyncMiddleware(async (req, res) => {
+        if (!req.user._id) {
+            return res.status(404).send("This user is not logged in.");
+        }
+        let new_position = await createPosition(req.body, req.params.companyID);
+        res.send(new_position);
+    })
 );
-
-
 
 router.get(
     "/:companyId/:positionId",
@@ -127,37 +127,59 @@ router.get(
                     const totalUsers = await User.count();
                     console.log("we have:", totalUsers, "users");
                     for (let page = 0; page * pageSize < totalUsers; page++) {
-                        const users = await User.find(
+                        const users = await User.aggregate([
                             {
-                                _id: {
-                                    $ne: userId,
+                                $match: {
+                                    _id: {
+                                        $ne: userId,
+                                    },
+                                    role: "User",
                                 },
-                                role: "User",
                             },
                             {
-                                _id: 1,
-                                firstName: 1,
-                                lastName: 1,
-                                email: 1,
-                                cvs: 1,
-                            }
-                        )
-                            .skip(page * pageSize)
-                            .limit(pageSize);
+                                $skip: page * pageSize,
+                            },
+                            {
+                                $limit: pageSize,
+                            },
+                            {
+                                $project: {
+                                    _id: 1,
+                                    firstName: 1,
+                                    lastName: 1,
+                                    email: 1,
+                                    cvs: 1,
+                                },
+                            },
+                            {
+                                $lookup: {
+                                    from: "cvs",
+                                    localField: "cvs",
+                                    foreignField: "_id",
+                                    as: "cvs",
+                                },
+                            },
+                        ]);
 
                         users.forEach((currUser) => {
                             let userScore = 0;
-                            currUser.cvs.forEach((currCv) => {
+                            currUser.cvs.forEach((currUserCv) => {
                                 let cvScore = 0;
-                                currCv.tags.forEach((currTag) => {
-                                    if (position.tags.includes(currTag)) {
+                                currUserCv.tags.forEach((currTag) => {
+                                    if (
+                                        position.tags.some(
+                                            (currPosTag) =>
+                                                currPosTag.toLowerCase() ===
+                                                currTag.toLowerCase()
+                                        )
+                                    ) {
                                         cvScore++;
                                     }
                                 });
-
-                                userScore = max(userScore, cvScore);
+                                if (cvScore > userScore) {
+                                    userScore = cvScore;
+                                }
                             });
-
                             if (suggestedUsers.length < count) {
                                 suggestedUsers.push({
                                     user: currUser,
@@ -170,9 +192,9 @@ router.get(
                                         currUserSuggestion.score
                                 );
 
-                                if (currMin < userScore) {
+                                if (currMin.score < userScore) {
                                     const minIndex = suggestedUsers.indexOf(
-                                        (curr) => curr.socre === currMin
+                                        (curr) => curr.socre === currMin.socre
                                     );
                                     suggestedUsers[minIndex] = {
                                         user: currUser,
@@ -182,7 +204,7 @@ router.get(
                             }
                         });
                     }
-                    suggestedUsers.sort((a, b) => a.score - b.score);
+                    suggestedUsers.sort((a, b) => b.score - a.score);
                     res.send(suggestedUsers);
                 } else {
                     res.status(404).send("The givan position ID was not found");
