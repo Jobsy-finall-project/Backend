@@ -16,11 +16,11 @@ router.post(
     asyncMiddleware(async (req, res) => {
         const { error } = validateCv(req.body);
         if (error) return res.status(400).send(error.details[0].message);
-        let cv = {
+        let cv = new Cv({
             title: req.body.title,
             cvFile: req.body.cvFile,
             tags: [],
-        };
+        });
 
         axios
             .post("http://localhost:5000/", {
@@ -30,11 +30,30 @@ router.post(
             .then(async (axiosRes) => {
                 if (axiosRes.status === 200) {
                     cv.tags = axiosRes.data;
-
+                    const savedCv = await cv.save();
                     let user = await User.findById(req.user._id);
-                    len = user.cvs.push(cv);
+                    if (user) {
+                        if (user.cvs) {
+                            user.cvs.push(savedCv._id);
+                        } else {
+                            user.cvs = [savedCv._id];
+                        }
+                    }
                     await user.save();
                 }
+                res.send(cv);
+            })
+            .catch(async (error) => {
+                const savedCv = await cv.save();
+                let user = await User.findById(req.user._id);
+                if (user) {
+                    if (user.cvs) {
+                        user.cvs.push(savedCv._id);
+                    } else {
+                        user.cvs = [savedCv._id];
+                    }
+                }
+                await user.save();
                 res.send(cv);
             });
     })

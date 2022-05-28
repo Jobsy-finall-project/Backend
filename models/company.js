@@ -14,11 +14,9 @@ const companySchema = new mongoose.Schema({
     minlength: 0,
     maxlength: 255
   },
-  positions: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref:"Position",
-    required: true
-  }]
+  positions: {
+    type: [positionSchema]
+  }
 });
 
 const Company = mongoose.model("Company", companySchema);

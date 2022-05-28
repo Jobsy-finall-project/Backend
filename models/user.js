@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 const config = require("config");
 const mongoose = require("mongoose");
 const { applicationSchema } = require("./application");
-const { cvSchema } = require("./cv");
+const { cvSchema, Cv } = require("./cv");
 const Joi = require("joi");
 
 const userSchema = new mongoose.Schema({
