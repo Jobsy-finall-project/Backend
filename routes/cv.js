@@ -9,6 +9,72 @@ const axios = require("axios").default;
 
 const router = express.Router();
 router.use(express.json());
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Cv:
+ *       type: object
+ *       properties:
+ *         _id:
+ *           type: string
+ *           required: true
+ *         file:
+ *           type: string
+ *           required: true
+ *         tags:
+ *           type: array
+ *           items:
+ *             type: string
+ *           example: ["Ruby"]
+ *     User:
+ *       type: object
+ *       properties:
+ *         _id:
+ *           type: string
+ *           required: true
+ *         first name:
+ *           type: string
+ *           required: true
+ *         last name:
+ *           type: string
+ *           required: true
+ *         username:
+ *           type: string
+ *           required: true
+ *         cvs:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/Cv'
+ */
+
+/**
+ * @swagger
+ * tags:
+ *   name: CVS
+ *   description: the User's CV
+ */
+
+/**
+ * @swagger
+ * /cv/:
+ *   post:
+ *     summary: Upload a new cv to the current user
+ *     tags: [CVS]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Cv'
+ *     responses:
+ *       200:
+ *         description: the list of the suggested users for the postion
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Cv'
+ */
 
 router.post(
     "/",

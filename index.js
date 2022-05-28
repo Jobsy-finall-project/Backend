@@ -2,6 +2,13 @@ const winston = require("winston");
 const express = require("express");
 const app = express();
 require("dotenv").config()
+const swaggerUi = require("swagger-ui-express");
+const swaggerJsDoc = require("swagger-jsdoc");
+const swaggerDocument = require("./docs");
+
+const specs = swaggerJsDoc(swaggerDocument);
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 require("./startup/logging")();
 require("./startup/routes")(app);

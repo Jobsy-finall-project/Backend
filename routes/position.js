@@ -14,6 +14,53 @@ const { Cv } = require("../models/cv");
 const router = express.Router();
 router.use(express.json());
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Cv:
+ *       type: object
+ *       properties:
+ *         _id:
+ *           type: string
+ *           required: true
+ *         file:
+ *           type: string
+ *           required: true
+ *         tags:
+ *           type: array
+ *           items:
+ *             type: string
+ *           example: ["Ruby"]
+ *     User:
+ *       type: object
+ *       properties:
+ *         _id:
+ *           type: string
+ *           required: true
+ *         first name:
+ *           type: string
+ *           required: true
+ *         last name:
+ *           type: string
+ *           required: true
+ *         username:
+ *           type: string
+ *           required: true
+ *         cvs:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/Cv'
+ */
+
+/**
+ * @swagger
+ * tags:
+ *   name: positions
+ *   description: Positions in the system
+ */
+
+
 router.post(
     "/:companyID",
     auth,
@@ -106,6 +153,42 @@ router.put(
         }
     })
 );
+
+/**
+ * @swagger
+ * /positions/suggestions/{companyId}/{positionId}:
+ *   get:
+ *     summary: return suggested users for the postion
+ *     tags: [positions]
+ *     parameters:
+ *       - in : path
+ *         name: companyId
+ *         description: id of the company
+ *         schema:
+ *           type: string
+ *         required: true
+ *       - in : path
+ *         name: positionId
+ *         description: id of the position
+ *         schema:
+ *           type: string
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: the list of the suggested users for the postion sorted by the matching score
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   user:
+ *                     $ref: '#/components/schemas/User'
+ *                   score:
+ *                     type: integer
+ *                     required: true
+ */
 
 router.get(
     "/suggestions/:companyId/:positionId",
