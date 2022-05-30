@@ -231,39 +231,41 @@ router.get(
                     const totalUsers = await User.count();
                     console.log("we have:", totalUsers, "users");
                     for (let page = 0; page * pageSize < totalUsers; page++) {
-                        const users = await User.aggregate([
-                            {
-                                $match: {
-                                    _id: {
-                                        $ne: userId,
-                                    },
-                                    role: "User",
-                                },
-                            },
-                            {
-                                $skip: page * pageSize,
-                            },
-                            {
-                                $limit: pageSize,
-                            },
-                            {
-                                $project: {
-                                    _id: 1,
-                                    firstName: 1,
-                                    lastName: 1,
-                                    email: 1,
-                                    cvs: 1,
-                                },
-                            },
-                            {
-                                $lookup: {
-                                    from: "cvs",
-                                    localField: "cvs",
-                                    foreignField: "_id",
-                                    as: "cvs",
-                                },
-                            },
-                        ]);
+                        // const users = await User.aggregate([
+                        //     {
+                        //         $match: {
+                        //             _id: {
+                        //                 $ne: userId,
+                        //             },
+                        //             role: "User",
+                        //         },
+                        //     },
+                        //     {
+                        //         $skip: page * pageSize,
+                        //     },
+                        //     {
+                        //         $limit: pageSize,
+                        //     },
+                        //     {
+                        //         $project: {
+                        //             _id: 1,
+                        //             firstName: 1,
+                        //             lastName: 1,
+                        //             email: 1,
+                        //             cvs: 1,
+                        //         },
+                        //     },
+                        //     {
+                        //         $lookup: {
+                        //             from: "cvs",
+                        //             localField: "cvs",
+                        //             foreignField: "_id",
+                        //             as: "cvs",
+                        //         },
+                        //     },
+                        // ]);
+
+                        const users = User.find().populate("cv")
 
                         users.forEach((currUser) => {
                             let userScore = 0;

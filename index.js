@@ -5,9 +5,11 @@ require("dotenv").config()
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsDoc = require("swagger-jsdoc");
 const swaggerDocument = require("./docs");
+const cors = require("cors");
 
 const specs = swaggerJsDoc(swaggerDocument);
 
+app.use(cors({ exposedHeaders: ["x-auth-token"] }));
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 require("./startup/logging")();

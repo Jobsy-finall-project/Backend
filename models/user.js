@@ -85,7 +85,7 @@ function validateUser(user) {
           .min(8)
           .max(32)
           .regex(
-              /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[*.!@$%^&{}:;<>,.?~_+-]).{8,32}$/
+              /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,32}$/
           ),
       role: Joi.string()
           .required()
