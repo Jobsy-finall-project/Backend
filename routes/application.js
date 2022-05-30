@@ -16,13 +16,13 @@ const router = express.Router();
 router.use(express.json());
 
 router.post(
-  "/",
+  "/:companyId",
   auth,
   asyncMiddleware(async (req, res) => {
       if (!req.user._id)
           return res.status(404).send("This user is not logged in.");
 
-      const inserted_application= await createApplication(req.body,req.user._id );
+      const inserted_application= await createApplication(req.body,req.user._id,req.params.companyId );
 
     res.send(inserted_application);
   })
@@ -43,7 +43,6 @@ router.get(
   asyncMiddleware(async (req, res) => {
     const applications= await getAllApplicationsByUserId(req.user._id);
     res.send(applications);
-
   })
 );
 

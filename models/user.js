@@ -56,11 +56,10 @@ const userSchema = new mongoose.Schema({
     ref:"Cv",
     required: true
   }],
-  companyName:{
-    type: String,
-    required: false,
-    minlength: 2,
-    maxlength: 30,
+  company:{
+    type: mongoose.Schema.Types.ObjectId,
+    ref:"Company",
+    required: false
   }
 });
 
@@ -91,7 +90,7 @@ function validateUser(user) {
           .required()
           .valid(...Object.values(["Anonymous", "User", "Admin", "HR"])),
     applications: Joi.array(),
-    companyName: Joi.string().min(2).max(30)
+    company: Joi.optional()
   });
 
   return schema.validate(user);

@@ -5,6 +5,7 @@ const Joi = require("joi");
 Joi.ObjectId = require("joi-objectid")(Joi);
 const { Company } = require("../models/company");
 const {createCompany} = require("../services/company");
+const {User} = require("../models/user");
 
 const router = express.Router();
 router.use(express.json());
@@ -22,28 +23,30 @@ router.post(
   })
 );
 
-router.get(
-  "/:companyId",
-  auth,
-  asyncMiddleware(async (req, res) => {
-    if (!req.user._id)
-      return res.status(404).send("This user is not logged in.");
-
-    const company = await Company.findById(req.params.companyId);
-
-    return company
-      ? res.send(company)
-      : res.status(404).send("The givan company ID is not found");
-  })
-);
 
 router.get(
   "/",
   auth,
   asyncMiddleware(async (req, res) => {
-    const companies = await Company.find();
-    res.send(companies);
+      const user= await User.findById(req.user._id);
+    const company = await Company.findById(user._doc.company).populate("positions");
+    res.send(company);
   })
+);
+
+router.get(
+    "/:companyId",
+    auth,
+    asyncMiddleware(async (req, res) => {
+        if (!req.user._id)
+            return res.status(404).send("This user is not logged in.");
+
+        const company = await Company.findById(req.params.companyId);
+
+        return company
+            ? res.send(company)
+            : res.status(404).send("The givan company ID is not found");
+    })
 );
 
 router.delete(

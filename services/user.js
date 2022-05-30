@@ -1,6 +1,7 @@
 
 const {User, validateUser} = require("../models/user");
 const bcrypt = require("bcrypt");
+const {createCompany} = require("./company");
 
 
 async function createUser(user){
@@ -24,8 +25,15 @@ async function createUser(user){
         applications:[],
         cvs:[]
     });
-    if (user.role === "hr"){
-        new_user.companyName=user.companyName;
+    if (user.role.toLowerCase() === "hr"){
+        try{
+            const inserted_company= await createCompany(user.company);
+            new_user.company=inserted_company._doc._id;
+
+        } catch (err){
+            throw new Error("cant insert company");
+        }
+
     }
 
     const salt = await bcrypt.genSalt(10);

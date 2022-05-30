@@ -23,14 +23,16 @@ async function createCompanyWithPositionAddition(company, positionId){
 async function createCompany(company){
     const { error } = validateCompany(company);
     if (error) return (error.details[0].message);
-    let isCompanyExist= await Company.find({name:company.name});
-    if(isCompanyExist){
-
-    }
-    let new_company=new Company(company);
+    const new_company=new Company(company);
     const return_value= await new_company.save();
     return return_value;
 }
 
+async function addPositionToCompany(companyId,positionId){
+    const company= await Company.findById(companyId);
+    company._doc.positions? company._doc.positions.push(positionId): company._doc.positions=[positionId];
+    await company.save();
+}
 
-module.exports= {createCompany, createCompanyWithPositionAddition};
+
+module.exports= {createCompany, createCompanyWithPositionAddition, addPositionToCompany};

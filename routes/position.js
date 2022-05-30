@@ -8,8 +8,9 @@ const { Position } = require("../models/position");
 const { validatePosition } = require("../models/position");
 const { User } = require("../models/user");
 const { max, minBy } = require("lodash");
-const { createPosition } = require("../services/position");
+const { createPosition, getAllPositionsByUserId, deletePosition} = require("../services/position");
 const { Cv } = require("../models/cv");
+const {getAllApplicationsByUserId} = require("../services/application");
 
 const router = express.Router();
 router.use(express.json());
@@ -61,73 +62,47 @@ router.use(express.json());
  */
 
 
+
+
 router.post(
-    "/:companyID",
+    "/:companyId",
     auth,
     asyncMiddleware(async (req, res) => {
         if (!req.user._id) {
             return res.status(404).send("This user is not logged in.");
         }
-        let new_position = await createPosition(req.body, req.params.companyID);
+        let new_position = await createPosition(req.body, req.user._id, req.params.companyId);
         res.send(new_position);
     })
 );
 
-router.post(
-    "/",
-    auth,
-    asyncMiddleware(async (req, res) => {
-        if (!req.user._id) {
-            return res.status(404).send("This user is not logged in.");
-        }
-        let new_position = await createPosition(req.body);
-        res.send(new_position);
-    })
-);
-
-router.get(
-    "/:companyId/:positionId",
-    auth,
-    asyncMiddleware(async (req, res) => {
-        let position;
-        const company = await Company.findById(req.params.companyId);
-        if (company && req.params.positionId && company.positions) {
-            position = company.positions.find(
-                (position) => position._id == req.params.positionId
-            );
-        }
-        return position
-            ? res.send(position)
-            : company && company.positions
-            ? res.status(404).send("The givan position ID is not found")
-            : res
-                  .status(404)
-                  .send("This company is not exist or it has no positions");
-    })
-);
 
 router.get(
     "/:positionId",
     auth,
     asyncMiddleware(async (req, res) => {
-        const positions = await Position.findById(req.params.positionId).populate("template");
-       res.json(positions);
+        const position = await Position.findById(req.params.positionId).populate("template");
+       res.json(position);
     })
 );
 
-// router.get(
-//     "/:companyId",
-//     auth,
-//     asyncMiddleware(async (req, res) => {
-//         const company = await Company.findById(req.params.companyId);
-//         if (company && company.positions) {
-//             return res.send(company.positions);
-//         }
-//         res.status(404).send(
-//             "This company was not exist or it has no positions"
-//         );
-//     })
-// );
+router.get(
+    "/",
+    auth,
+    asyncMiddleware(async (req, res) => {
+        const positions = await getAllPositionsByUserId(req.user._id);
+        res.json(positions);
+    })
+);
+
+router.delete(
+    "/:positionId",
+    auth,
+    asyncMiddleware(async (req, res) => {
+        const deleted_position= await deletePosition(req.params.positionId, req.user._id);
+        res.send(deleted_position);
+    })
+);
 
 router.delete(
     "/:companyId/:positionId",
@@ -145,6 +120,56 @@ router.delete(
         res.send(position);
     })
 );
+
+// router.post(
+//     "/:companyID",
+//     auth,
+//     asyncMiddleware(async (req, res) => {
+//         if (!req.user._id) {
+//             return res.status(404).send("This user is not logged in.");
+//         }
+//         let new_position = await createPosition(req.body, req.params.companyID);
+//         res.send(new_position);
+//     })
+// );
+
+// router.get(
+//     "/:companyId/:positionId",
+//     auth,
+//     asyncMiddleware(async (req, res) => {
+//         let position;
+//         const company = await Company.findById(req.params.companyId);
+//         if (company && req.params.positionId && company.positions) {
+//             position = company.positions.find(
+//                 (position) => position._id == req.params.positionId
+//             );
+//         }
+//         return position
+//             ? res.send(position)
+//             : company && company.positions
+//                 ? res.status(404).send("The givan position ID is not found")
+//                 : res
+//                     .status(404)
+//                     .send("This company is not exist or it has no positions");
+//     })
+// );
+
+
+// router.get(
+//     "/:companyId",
+//     auth,
+//     asyncMiddleware(async (req, res) => {
+//         const company = await Company.findById(req.params.companyId);
+//         if (company && company.positions) {
+//             return res.send(company.positions);
+//         }
+//         res.status(404).send(
+//             "This company was not exist or it has no positions"
+//         );
+//     })
+// );
+
+
 
 router.put(
     "/:companyId/:positionId",
