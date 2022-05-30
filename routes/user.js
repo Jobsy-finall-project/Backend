@@ -1,6 +1,6 @@
 const validateObjectId = require("../middleware/validateObjectId");
 const auth = require("../middleware/auth");
-const { admin } = require("../middleware/role");
+const { admin, hr, user} = require("../middleware/role");
 const _ = require("lodash");
 const express = require("express");
 const { User } = require("../models/user");
@@ -27,8 +27,28 @@ router.get("/", [auth, admin], async (req, res) => {
   res.send(users);
 });
 
-router.get("/me", auth, async (req, res) => {
-  const user = await User.findById({ _id: req.user._id }).select("-password");
+router.get("/me" ,auth, async (req, res) => {
+
+  const user = await User.findById({ _id: req.user._id }).populate("applications")
+      .populate({
+        path:"company",
+         populate:{
+             path:"positions",
+              model:"Position"
+  }}).select("-password");
+  if (user) return res.send(user);
+  return res.status(404).send("The user with the given token was not found");
+});
+
+router.get("/me" ,auth, async (req, res) => {
+
+  const user = await User.findById({ _id: req.user._id })
+      .populate({
+        path:"company",
+        populate:{
+          path:"positions",
+          model:"Position"
+        }}).select("-password");
   if (user) return res.send(user);
   return res.status(404).send("The user with the given token was not found");
 });

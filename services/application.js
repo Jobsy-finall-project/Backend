@@ -1,16 +1,15 @@
 const {validateApplication, Application} = require("../models/application");
 const {User} = require("../models/user");
 const {createPosition} = require("./position");
-const {createCompanyWithPositionAddition} = require("./company");
+const {createCompanyWithPositionAddition, addPositionToCompany} = require("./company");
 
 
-async function createApplication(application, userId){
+async function createApplication(application, userId, companyId){
     const { error } = validateApplication(application);
     if (error) return (error.details[0].message);
 
     const user = await User.findById(userId);
-    const inserted_position= await createPosition(application.position);
-    const inserted_company= await createCompanyWithPositionAddition(application.company,inserted_position._doc._id);
+    const inserted_position= await createPosition(application.position, userId, companyId);
 
     let inserted_cv=null;
     if(application.cvFile){
@@ -24,7 +23,7 @@ async function createApplication(application, userId){
         isActive:true,
         position:inserted_position._doc._id,
         steps:[],
-        company:inserted_company?._doc?._id,
+        company:companyId,
         isMatch:false
     });
     const inserted_application= await new_application.save();
