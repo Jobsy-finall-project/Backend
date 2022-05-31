@@ -34,5 +34,24 @@ async function addPositionToCompany(companyId,positionId){
     await company.save();
 }
 
+async function updateCompanyById(newDetailes,companyId){
+    const company= await Company.findByIdAndUpdate(companyId,{...newDetailes})
+    const updated_company= await Company.findById(company._doc._id);
+    return updated_company;
+}
 
-module.exports= {createCompany, createCompanyWithPositionAddition, addPositionToCompany};
+async function getCompanyById(companyId){
+    const company= await Company.findById(companyId);
+    return company;
+}
+
+async function deleteCompanyById(companyId){
+    const deleted_company = await Company.findByIdAndRemove(companyId, {
+        new: true
+    });
+    return deleted_company;
+
+}
+
+
+module.exports= {createCompany, createCompanyWithPositionAddition, addPositionToCompany, updateCompanyById, getCompanyById, deleteCompanyById};

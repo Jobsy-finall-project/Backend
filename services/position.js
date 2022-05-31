@@ -44,6 +44,13 @@ async function deletePosition(positionId, hrId){
         
 }
 
+async function updatePositionById(newDetailes, positionId){
+        const position= await Position.findByIdAndUpdate(positionId,{...newDetailes})
+        const updated_position= await Position.findById(position._doc._id);
+        return updated_position;
+
+}
 
 
-module.exports= {createPosition, getAllPositionsByUserId, deletePosition};
+
+module.exports= {createPosition, getAllPositionsByUserId, deletePosition, updatePositionById};
