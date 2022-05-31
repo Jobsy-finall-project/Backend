@@ -57,5 +57,11 @@ async function deleteApplicationById(applicationId, userId){
     return removed_application;
 }
 
+async function addComment(comment,applicationId){
+    const application= await Application.findById(applicationId);
+    application._doc.comments?application._doc.comments.push(comment):application._doc.comments=[comment];
+    return await application.save();
+}
 
-module.exports= {createApplication,getAllApplicationsByUserId,getApplicationById,deleteApplicationById};
+
+module.exports= {createApplication,getAllApplicationsByUserId,getApplicationById,deleteApplicationById, addComment};

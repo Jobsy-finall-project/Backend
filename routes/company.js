@@ -35,6 +35,15 @@ router.get(
 );
 
 router.get(
+    "/all",
+    auth,
+    asyncMiddleware(async (req, res) => {
+        const companies= await Company.find({});
+            res.send(companies);
+    })
+);
+
+router.get(
     "/:companyId",
     auth,
     asyncMiddleware(async (req, res) => {

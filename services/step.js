@@ -46,4 +46,10 @@ async function getStepById(stepId){
     return step;
 }
 
-module.exports={createStepAndAddToPosition, createStepAndAddToApplication, getStepById}
+async function addComment(comment, stepId){
+    const step= await Step.findById(stepId);
+    step._doc.comments?step._doc.comments.push(comment):step._doc.comments=[comment];
+    return await step.save();
+}
+
+module.exports={createStepAndAddToPosition, createStepAndAddToApplication, getStepById, addComment}

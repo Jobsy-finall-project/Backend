@@ -5,8 +5,9 @@ const { User } = require("../models/user");
 const { Application } = require("../models/application");
 const { Step } = require("../models/step");
 const { validateStep } = require("../models/step");
-const { createStep, createStepAndAddToPosition, createStepAndAddToApplication, getStep} = require("../services/step");
+const { createStep, createStepAndAddToPosition, createStepAndAddToApplication, getStep, getStepById} = require("../services/step");
 const {Position} = require("../models/position");
+const {addComment} = require("../services/step");
 
 
 const router = express.Router();
@@ -44,6 +45,18 @@ router.post(
       }
       res.send(new_step);
   }));
+
+router.post(
+    "/comment/:stepId",
+    auth,
+    asyncMiddleware(async (req, res) => {
+        if (!req.user._id)
+            return res.status(404).send("This user is not logged in.");
+
+        const step_with_inserted_comment= await addComment(req.body.comment,req.params.stepId);
+        res.send(step_with_inserted_comment);
+
+    }));
 
 router.get(
   "/:stepId",
