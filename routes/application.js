@@ -67,6 +67,7 @@ router.delete(
   })
 );
 
+
 router.put(
   "/:applicationId",
   auth,

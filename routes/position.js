@@ -8,7 +8,7 @@ const { Position } = require("../models/position");
 const { validatePosition } = require("../models/position");
 const { User } = require("../models/user");
 const { max, minBy } = require("lodash");
-const { createPosition, getAllPositionsByUserId, deletePosition} = require("../services/position");
+const { createPosition, getAllPositionsByUserId, deletePosition, updatePositionById} = require("../services/position");
 const { Cv } = require("../models/cv");
 const {getAllApplicationsByUserId} = require("../services/application");
 
@@ -104,101 +104,15 @@ router.delete(
     })
 );
 
-router.delete(
-    "/:companyId/:positionId",
-    auth,
-    asyncMiddleware(async (req, res) => {
-        let position;
-        const company = await Company.findById(req.params.companyId);
-        if (company) {
-            position = company.positions.id(req.params.positionId);
-        } else {
-            res.status(404).send("The givan company ID was not found");
-        }
-        position.remove();
-        await company.save();
-        res.send(position);
-    })
-);
-
-// router.post(
-//     "/:companyID",
-//     auth,
-//     asyncMiddleware(async (req, res) => {
-//         if (!req.user._id) {
-//             return res.status(404).send("This user is not logged in.");
-//         }
-//         let new_position = await createPosition(req.body, req.params.companyID);
-//         res.send(new_position);
-//     })
-// );
-
-// router.get(
-//     "/:companyId/:positionId",
-//     auth,
-//     asyncMiddleware(async (req, res) => {
-//         let position;
-//         const company = await Company.findById(req.params.companyId);
-//         if (company && req.params.positionId && company.positions) {
-//             position = company.positions.find(
-//                 (position) => position._id == req.params.positionId
-//             );
-//         }
-//         return position
-//             ? res.send(position)
-//             : company && company.positions
-//                 ? res.status(404).send("The givan position ID is not found")
-//                 : res
-//                     .status(404)
-//                     .send("This company is not exist or it has no positions");
-//     })
-// );
-
-
-// router.get(
-//     "/:companyId",
-//     auth,
-//     asyncMiddleware(async (req, res) => {
-//         const company = await Company.findById(req.params.companyId);
-//         if (company && company.positions) {
-//             return res.send(company.positions);
-//         }
-//         res.status(404).send(
-//             "This company was not exist or it has no positions"
-//         );
-//     })
-// );
-
-
-
 router.put(
-    "/:companyId/:positionId",
+    "/:positionId",
     auth,
     asyncMiddleware(async (req, res) => {
-        const company = await Company.findById(req.params.companyId);
-        let position;
-        if (company) {
-            if (company.positions) {
-                position = company.positions.find(
-                    (position) => position._id == req.params.positionId
-                );
-                if (position) {
-                    position.name = req.body.name;
-                    position.description = req.body.description;
-
-                    await company.save();
-                    res.send(position);
-                } else {
-                    res.status(404).send("The givan position ID was not found");
-                }
-            } else {
-                res.status(404).send("This company was not have positions");
-            }
-        } else {
-            res.status(404).send("The givan company ID was not found");
-        }
+        const updated_position= await updatePositionById(req.body, req.params.positionId)
+        res.send(updated_position);
     })
 );
+
 
 /**
  * @swagger

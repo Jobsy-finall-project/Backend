@@ -52,4 +52,11 @@ async function addComment(comment, stepId){
     return await step.save();
 }
 
-module.exports={createStepAndAddToPosition, createStepAndAddToApplication, getStepById, addComment}
+async function updateStepById(newDetailes, stepId){
+    const step= await Step.findByIdAndUpdate(stepId,{...newDetailes})
+    const updated_step= await Step.findById(step._doc._id);
+    return updated_step;
+
+}
+
+module.exports={createStepAndAddToPosition, createStepAndAddToApplication, getStepById, addComment, updateStepById}
