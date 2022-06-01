@@ -4,7 +4,7 @@ const bcrypt = require("bcrypt");
 const {createCompany} = require("./company");
 
 
-async function createUser(user){
+async function createUser(user) {
     const { error } = validateUser(user);
     if (error) throw new Error(error.details[0].message);
 
@@ -26,9 +26,12 @@ async function createUser(user){
         cvs:[]
     });
     if (user.role.toLowerCase() === "hr"){
-        try{
-            const inserted_company= await createCompany(user.company);
-            new_user.company=inserted_company._doc._id;
+        try {
+            console.log({ user });
+            
+            const inserted_company = await createCompany(user.company);
+            console.log(inserted_company);
+            new_user.company = inserted_company._doc._id;
 
         } catch (err){
             throw new Error("cant insert company");
