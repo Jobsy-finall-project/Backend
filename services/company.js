@@ -23,6 +23,10 @@ async function createCompanyWithPositionAddition(company, positionId){
 async function createCompany(company){
     const { error } = validateCompany(company);
     if (error) return (error.details[0].message);
+    let isCompanyExist= await Company.find({name:company.name});
+    if(isCompanyExist.length>0){
+        return isCompanyExist[0];
+    }
     const new_company=new Company(company);
     const return_value= await new_company.save();
     return return_value;
