@@ -22,11 +22,15 @@ async function createCompany(company) {
     console.log("createCompany");
     console.log(typeof company.name, company.name);
     const { error } = validateCompany(company);
+
     if (error) return error.details[0].message;
+    let isCompanyExist = await Company.find({ name: company.name });
+    if (isCompanyExist.length > 0) {
+        return isCompanyExist[0];
+    }
     const new_company = new Company(company);
-    console.log({ new_company });
     const return_value = await new_company.save();
-    console.log(return_value);
+
     return return_value;
 }
 
