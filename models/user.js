@@ -42,7 +42,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ["Anonymous", "User", "Admin", "HR"],
+    enum: ["Anonymous", "Candidate", "Admin", "HR"],
     default: "Anonymous",
     required: true,
   },
@@ -81,14 +81,14 @@ function validateUser(user) {
       email: Joi.string().required().min(10).max(255).lowercase().email(),
       password: Joi.string()
           .required()
-          .min(8)
+          .min(4)
           .max(32)
           .regex(
-              /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,32}$/
+              /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{4,}$/
           ),
       role: Joi.string()
           .required()
-          .valid(...Object.values(["Anonymous", "User", "Admin", "HR"])),
+          .valid(...Object.values(["Anonymous", "Candidate", "Admin", "HR"])),
     applications: Joi.array(),
     company: Joi.optional()
   });

@@ -9,11 +9,11 @@ const applicationSchema = new mongoose.Schema({
   isFavorite: Boolean,
   isActive: Boolean,
   isMatch:Boolean,
-  position: [{
+  position: {
     type: mongoose.Schema.Types.ObjectId,
     ref:"Position",
     required: true
-  }],
+  },
   cvFiles: {
     type: mongoose.Schema.Types.ObjectId,
     ref:"Cv",

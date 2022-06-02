@@ -2,6 +2,7 @@
 const {User, validateUser} = require("../models/user");
 const bcrypt = require("bcrypt");
 const {createCompany} = require("./company");
+const mongoose = require("mongoose");
 
 
 async function createUser(user){
