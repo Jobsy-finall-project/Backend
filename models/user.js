@@ -58,12 +58,10 @@ const userSchema = new mongoose.Schema({
     required: true,
     default: []
   }],
-  companyName:{
-    type: String,
-    required: false,
-    minlength: 2,
-    maxlength: 30,
-    default: ""
+  company:{
+    type: mongoose.Schema.Types.ObjectId,
+    ref:"Company",
+    required: false
   }
 });
 
@@ -77,7 +75,7 @@ userSchema.methods.generateAuthToken = function () {
       email: this.email,
       applications: this.applications,
       cvs: this.cvs,
-      companyName: this.companyName   
+      company: this.company
     },
     config.get("jwtPrivateKey")
   );
@@ -103,7 +101,7 @@ function validateUser(user) {
           .required()
           .valid(...Object.values(["Anonymous", "User", "Admin", "HR"])),
     applications: Joi.array(),
-    companyName: Joi.string().min(2).max(30)
+    company: Joi.optional()
   });
 
   return schema.validate(user);

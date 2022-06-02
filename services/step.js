@@ -1,6 +1,29 @@
 
 const {Step, validateStep} = require("../models/step");
+const {Position} = require("../models/position");
+const {Application} = require("../models/application");
 
+
+async function createStepAndAddToPosition(step, positionId){
+    const position = await Position.findById(positionId);
+    if(!position)
+        throw new Error("The position not found");
+    const inserted_step = await createStep(step);
+    position._doc.template.push(inserted_step._doc._id);
+    await position.save();
+    return inserted_step;
+
+}
+
+async function createStepAndAddToApplication(step, applicationId){
+    const application = await Application.findById(applicationId);
+    if(!application)
+        throw new Error("The application not found");
+    const inserted_step = await createStep(step);
+    application._doc.steps.push(inserted_step._doc._id);
+    await application.save();
+    return inserted_step;
+}
 
 async function createStep(step){
     step.time=new Date();
@@ -14,10 +37,26 @@ async function createStep(step){
         time: new Date(),
         comments: step.comments
     });
-
     const inserted_step= await new_step.save();
     return inserted_step;
+}
+
+async function getStepById(stepId){
+    const step = await Step.findById(stepId);
+    return step;
+}
+
+async function addComment(comment, stepId){
+    const step= await Step.findById(stepId);
+    step._doc.comments?step._doc.comments.push(comment):step._doc.comments=[comment];
+    return await step.save();
+}
+
+async function updateStepById(newDetailes, stepId){
+    const step= await Step.findByIdAndUpdate(stepId,{...newDetailes})
+    const updated_step= await Step.findById(step._doc._id);
+    return updated_step;
 
 }
 
-module.exports={createStep}
+module.exports={createStepAndAddToPosition, createStepAndAddToApplication, getStepById, addComment, updateStepById}

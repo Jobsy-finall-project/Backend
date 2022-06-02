@@ -9,23 +9,35 @@ const {Position, validatePosition} = require("../models/position");
 const {Cv} = require("../models/cv");
 const {createPosition} = require("../services/position");
 const {createCompany} = require("../services/company");
-const {createApplication, getAllApplicationsByUserId, getApplicationById, deleteApplicationById} = require("../services/application");
+const {createApplication, getAllApplicationsByUserId, getApplicationById, deleteApplicationById, addComment} = require("../services/application");
 
 
 const router = express.Router();
 router.use(express.json());
 
 router.post(
-  "/",
+  "/:companyId",
   auth,
   asyncMiddleware(async (req, res) => {
       if (!req.user._id)
           return res.status(404).send("This user is not logged in.");
 
-      const inserted_application= await createApplication(req.body,req.user._id );
+      const inserted_application= await createApplication(req.body,req.user._id,req.params.companyId );
 
     res.send(inserted_application);
   })
+);
+
+router.post(
+    "/comment/:applicationId",
+    auth,
+    asyncMiddleware(async (req, res) => {
+        if (!req.user._id)
+            return res.status(404).send("This user is not logged in.");
+
+        const application_with_inserted_comment= await addComment(req.body.comment,req.params.applicationId);
+        res.send(application_with_inserted_comment);
+    })
 );
 
 router.get(
@@ -43,7 +55,6 @@ router.get(
   asyncMiddleware(async (req, res) => {
     const applications= await getAllApplicationsByUserId(req.user._id);
     res.send(applications);
-
   })
 );
 
@@ -55,6 +66,7 @@ router.delete(
     res.send(application);
   })
 );
+
 
 router.put(
   "/:applicationId",
