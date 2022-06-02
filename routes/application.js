@@ -50,7 +50,7 @@ router.get(
   }));
 
 router.get(
-  "/",
+  "/user/all",
   auth,
   asyncMiddleware(async (req, res) => {
     const applications= await getAllApplicationsByUserId(req.user._id);
