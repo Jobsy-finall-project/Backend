@@ -35,10 +35,11 @@ function validatePosition(position) {
       .max(75),
     description: Joi.string()
       .min(0)
-      .max(255),
-    tags: Joi.array(),
-    template: Joi.array(),
-    hrId: Joi.string()
+      .max(255)
+      .optional(),
+    tags: Joi.array().optional(),
+    template: Joi.array().optional(),
+    hrId: Joi.string().optional()
   });
 
   return schema.validate(position);

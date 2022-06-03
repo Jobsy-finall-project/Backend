@@ -39,7 +39,7 @@ function validateApplication(application) {
     isFavorite: Joi.boolean().default(false),
     isActive: Joi.boolean().default(true),
     isMatch: Joi.boolean().default(false),
-    position: Joi.required(),
+    position: Joi.optional(),
     cvFiles: Joi.optional(),
     comments: Joi.array(),
     steps: Joi.array(),
