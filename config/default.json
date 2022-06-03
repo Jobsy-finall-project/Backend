@@ -1,4 +1,4 @@
 {
     "jwtPrivateKey": "",
-    "db": "mongodb://localhost/jobsy"
+    "db": "mongodb://127.0.0.1/jobsy"
 }

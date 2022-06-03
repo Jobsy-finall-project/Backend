@@ -29,7 +29,8 @@ async function createApplication(application, userId, companyId) {
     const inserted_application = await new_application.save();
     user._doc.applications ? user._doc.applications.push(inserted_application._doc._id) : user._doc.applications = [inserted_application._doc._id];
     await user.save();
-    return inserted_application;
+    const returned_appliaction= await Application.findById(inserted_application._doc._id).populate("position");
+    return returned_appliaction;
 }
 
 async function getAllApplicationsByUserId(userId) {
