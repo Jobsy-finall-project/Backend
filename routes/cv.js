@@ -6,6 +6,7 @@ const asyncMiddleware = require("../middleware/async");
 const { validateCv } = require("../models/cv");
 const { user } = require("../middleware/role");
 const axios = require("axios").default;
+const mongoose = require("mongoose");
 
 const router = express.Router();
 router.use(express.json());
@@ -122,6 +123,51 @@ router.post(
                 await user.save();
                 res.send(cv);
             });
+    })
+);
+
+/**
+ * @swagger
+ * /cv/{cvId}:
+ *   delete:
+ *     description: Deletes a cv
+ *     tags: [CVS]
+ *     summary: Deletes a cv
+ *     parameters:
+ *       - in: path
+ *         name: cvId
+ *         required:  true
+ *         description: id of the cv to delete
+ *         schema:
+ *           type:  string
+ *     responses:
+ *       200:
+ *         description: deleted sccessfully
+ */
+router.delete(
+    "/:cvId",
+    auth,
+    asyncMiddleware(async (req, res) => {
+        console.log("removing cv");
+        const idToDelete = req.params.cvId;
+        const cvToRemove = await Cv.findByIdAndRemove(idToDelete);
+        if (!cvToRemove) {
+            throw new Error(
+                "cant delete this CV because it wasn't create by you"
+            );
+        }
+
+        const currUser = await User.findById(req.user._id);
+        currUser.cvs = currUser.cvs.filter(
+            (currCvId) => currCvId !== idToDelete
+        );
+        // currUser.save();
+        await User.findByIdAndUpdate(
+            req.user._id,
+            { $pull: { cvs: idToDelete } },
+            { safe: true, upsert: true }
+        );
+        res.send(cvToRemove);
     })
 );
 
