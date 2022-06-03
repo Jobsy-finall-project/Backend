@@ -49,12 +49,14 @@ const userSchema = new mongoose.Schema({
   applications: [{
     type: mongoose.Schema.Types.ObjectId,
     ref:"Application",
-    required: true
+    required: true,
+    default: []
   }],
   cvs: [{
     type: mongoose.Schema.Types.ObjectId,
     ref:"Cv",
-    required: true
+    required: true,
+    default: []
   }],
   company:{
     type: mongoose.Schema.Types.ObjectId,
@@ -65,7 +67,16 @@ const userSchema = new mongoose.Schema({
 
 userSchema.methods.generateAuthToken = function () {
   const token = jwt.sign(
-    { _id: this._id, role: this.role },
+    { _id: this._id, 
+      userName:this.userName,
+      firstName: this.firstName,
+      lastName: this.lastName,
+      role: this.role, 
+      email: this.email,
+      applications: this.applications,
+      cvs: this.cvs,
+      company: this.company
+    },
     config.get("jwtPrivateKey")
   );
   return token;
