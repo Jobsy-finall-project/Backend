@@ -59,4 +59,23 @@ async function updateStepById(newDetailes, stepId){
 
 }
 
-module.exports={createStepAndAddToPosition, createStepAndAddToApplication, getStepById, addComment, updateStepById}
+async function deleteStepFromApplication(applicationId, stepId){
+    const current_application = await Application.findById(applicationId);
+    const updated_steps = current_application._doc.steps.filter(cur => String(cur) !== stepId);
+    await Application.findByIdAndUpdate(applicationId, {steps:updated_steps});
+    const returned_application = await Application.findById(applicationId).populate("steps");
+    await Step.findByIdAndRemove(stepId);
+    return returned_application;
+}
+
+async function deleteStepFromPosition(positionId, stepId){
+    const current_position = await Position.findById(positionId);
+    const updated_template = current_position._doc.template.filter(cur => String(cur) !== stepId);
+    await Position.findByIdAndUpdate(positionId, {template:updated_template});
+    const returned_position = await Position.findById(positionId).populate("template");
+    await Step.findByIdAndRemove(stepId);
+    return returned_position;
+}
+
+module.exports={createStepAndAddToPosition, createStepAndAddToApplication,
+    getStepById, addComment, updateStepById, deleteStepFromApplication, deleteStepFromPosition}

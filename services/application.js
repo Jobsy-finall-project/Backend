@@ -89,9 +89,8 @@ async function getApplicationById(applicationId) {
 
 async function deleteApplicationById(applicationId, userId) {
     const user = await User.findById(userId);
-    //need to fix- dont delete from user
-    user._doc.applications = user._doc.applications.filter(cur => String(cur) != applicationId);
-    await user.save();
+    const updated_applications = user._doc.applications.filter(cur => String(cur) != applicationId);
+    await User.findByIdAndUpdate(userId,{applications: updated_applications})
     const removed_application = await Application.findByIdAndRemove(applicationId);
     return removed_application;
 }
