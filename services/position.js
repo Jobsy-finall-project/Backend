@@ -29,14 +29,11 @@ async function deletePosition(positionId, hrId){
         if(position._doc.hrId!==hrId){
                 throw new Error("cant delete this position because it wasn't create by you");
         }
-        const companyId = (await User.findById(hrId))._doc.company;
-
-        //dosent delete from company
-        Company.updateOne(
-            { _id: companyId },
-            { $pullAll: { positions: mongoose.Types.ObjectId(positionId) } }
-        );
-        
+        const current_user = await User.findById(hrId);
+        const companyId = current_user._doc.company;
+        const current_company= await Company.findById(companyId);
+        const updated_positions= current_company._doc.positions.filter(cur => String(cur) !== positionId);
+        const updated_company = await Company.findByIdAndUpdate(companyId, {positions: updated_positions});
         const deleted_position= await Position.findByIdAndRemove(positionId);
         return deleted_position;
 }
