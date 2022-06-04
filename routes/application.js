@@ -92,23 +92,31 @@ router.delete(
 
 
 router.put(
-  "/:applicationId",
-  auth,
-  asyncMiddleware(async (req, res) => {
-    const user = await User.findById(req.user._id);
-    let application;
-    if (user.applications) {
-      application = user.applications.find(
-        application => application._id == req.params.applicationId
-      );
-      if (application) {
-        application.isFavorite = req.body.isFavorite;
-        application.isActive = req.body.isActive;
-      }
-    }
-    await user.save();
-    res.send(application);
-  })
+    "/:applicationId",
+    auth,
+    asyncMiddleware(async (req, res) => {
+        console.log({ body: req.body });
+        const user = await User.findById(req.user._id);
+        if (user.applications.includes(req.params.applicationId)) {
+            const application = await Application.findById(
+                req.params.applicationId
+            );
+
+            if (req.body.isFavorite) {
+                application.isFavorite = req.body.isFavorite;
+            }
+            if (req.body.isActive) {
+                application.isActive = req.body.isActive;
+            }
+            if (req.body.isMatch) {
+                application.isMatch = req.body.isMatch;
+            }
+            await application.save();
+            res.send(application);
+        } else {
+          res.status(404).send("application not found")
+        }
+    })
 );
 
 module.exports = router;
