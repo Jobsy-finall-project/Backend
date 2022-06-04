@@ -1,6 +1,6 @@
 const {validateApplication, Application} = require("../models/application");
 const {User} = require("../models/user");
-const {createPosition} = require("./position");
+const {createPosition, updatePositionById} = require("./position");
 const {createCompanyWithPositionAddition, addPositionToCompany} = require("./company");
 
 
@@ -30,6 +30,42 @@ async function createApplication(application, userId, companyId) {
     user._doc.applications ? user._doc.applications.push(inserted_application._doc._id) : user._doc.applications = [inserted_application._doc._id];
     await user.save();
     const returned_appliaction= await Application.findById(inserted_application._doc._id).populate("position");
+    return returned_appliaction;
+}
+
+async function createMatch(application, userId, companyId, hrId) {
+    const { error } = validateApplication(application);
+    if (error) return error.details[0].message;
+
+    const user = await User.findById(userId);
+    const inserted_position = await updatePositionById(
+        application.position,
+        application.position._id
+    );
+    console.log(inserted_position);
+    let inserted_cv = null;
+    if (application.cvFile) {
+        inserted_cv = await createCv(application.cvFile);
+    }
+
+    let new_application = new Application({
+        cvFile: inserted_cv?._doc?._id,
+        comments: [],
+        isFavorite: false,
+        isActive: true,
+        position: inserted_position._doc._id,
+        steps: [],
+        company: companyId,
+        isMatch: false,
+    });
+    const inserted_application = await new_application.save();
+    user._doc.applications
+        ? user._doc.applications.push(inserted_application._doc._id)
+        : (user._doc.applications = [inserted_application._doc._id]);
+    await user.save();
+    const returned_appliaction = await Application.findById(
+        inserted_application._doc._id
+    ).populate("position");
     return returned_appliaction;
 }
 
@@ -67,4 +103,4 @@ async function addComment(comment, applicationId) {
 }
 
 
-module.exports = {createApplication, getAllApplicationsByUserId, getApplicationById, deleteApplicationById, addComment};
+module.exports = {createApplication, getAllApplicationsByUserId, getApplicationById, deleteApplicationById, addComment, createMatch};

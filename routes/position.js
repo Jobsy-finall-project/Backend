@@ -204,7 +204,15 @@ router.get(
                         //     },
                         // ]);
 
-                        const users = User.find().populate("cv")
+                        const users = await User.find({
+                            _id: {
+                                $ne: userId,
+                            },
+                            role: "Candidate",
+                        })
+                            .limit(pageSize)
+                            .skip(page * pageSize)
+                            .populate("cvs");
 
                         users.forEach((currUser) => {
                             let userScore = 0;
@@ -221,6 +229,7 @@ router.get(
                                         cvScore++;
                                     }
                                 });
+                                cvScore = (cvScore / position.tags.length) * 100;
                                 if (cvScore > userScore) {
                                     userScore = cvScore;
                                 }

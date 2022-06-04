@@ -8,8 +8,7 @@ const { validateApplication, Application } = require("../models/application");
 const {Position, validatePosition} = require("../models/position");
 const {Cv} = require("../models/cv");
 const {createPosition} = require("../services/position");
-const {createCompany} = require("../services/company");
-const {createApplication, getAllApplicationsByUserId, getApplicationById, deleteApplicationById, addComment} = require("../services/application");
+const {createApplication, createMatch, getAllApplicationsByUserId, getApplicationById, deleteApplicationById, addComment} = require("../services/application");
 
 
 const router = express.Router();
@@ -19,13 +18,37 @@ router.post(
   "/:companyId",
   auth,
   asyncMiddleware(async (req, res) => {
-      if (!req.user._id)
+      if (!req.user._id){
           return res.status(404).send("This user is not logged in.");
-
-      const inserted_application= await createApplication(req.body,req.user._id,req.params.companyId );
+      }
+      const inserted_application = await createApplication(req.body,req.user._id,req.params.companyId );
 
     res.send(inserted_application);
   })
+);
+
+router.post(
+    "/matches/:companyId",
+    auth,
+    asyncMiddleware(async (req, res) => {
+        if (!req.user._id) {
+            return res.status(404).send("This user is not logged in.");
+        }
+        console.log({ body: req.body });
+        console.log({ position: req.body.application.position });
+        console.log({ params: req.params });
+        const userIds = req.body.users;
+        const promises = userIds.map((currUserId) => {
+            return createMatch(
+                req.body.application,
+                currUserId,
+                req.params.companyId,
+                req.user._id
+            );
+        });
+        const applications = await Promise.all(promises);
+        res.send(applications);
+    })
 );
 
 router.post(
