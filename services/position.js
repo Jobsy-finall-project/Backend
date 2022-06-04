@@ -12,8 +12,8 @@ async function createPosition(position, hrId, companyId){
         const { error } = validatePosition(position);
         if (error) return (error.details[0].message);
 
-        let new_position= new Position({...position, hrId});
-        const inserted_position= await new_position.save();
+        let new_position = new Position({...position, hrId});
+        const inserted_position = await new_position.save();
         await addPositionToCompany(companyId, inserted_position._doc._id);
 
         return inserted_position;
