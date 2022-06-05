@@ -8,9 +8,14 @@ const { Position } = require("../models/position");
 const { validatePosition } = require("../models/position");
 const { User } = require("../models/user");
 const { max, minBy } = require("lodash");
-const { createPosition, getAllPositionsByUserId, deletePosition, updatePositionById} = require("../services/position");
+const {
+    createPosition,
+    getAllPositionsByUserId,
+    deletePosition,
+    updatePositionById,
+} = require("../services/position");
 const { Cv } = require("../models/cv");
-const {getAllApplicationsByUserId} = require("../services/application");
+const { getAllApplicationsByUserId } = require("../services/application");
 
 const router = express.Router();
 router.use(express.json());
@@ -61,9 +66,6 @@ router.use(express.json());
  *   description: Positions in the system
  */
 
-
-
-
 router.post(
     "/:companyId",
     auth,
@@ -71,18 +73,23 @@ router.post(
         if (!req.user._id) {
             return res.status(404).send("This user is not logged in.");
         }
-        let new_position = await createPosition(req.body, req.user._id, req.params.companyId);
+        let new_position = await createPosition(
+            req.body,
+            req.user._id,
+            req.params.companyId
+        );
         res.send(new_position);
     })
 );
-
 
 router.get(
     "/:positionId",
     auth,
     asyncMiddleware(async (req, res) => {
-        const position = await Position.findById(req.params.positionId).populate("template");
-       res.json(position);
+        const position = await Position.findById(
+            req.params.positionId
+        ).populate("template");
+        res.json(position);
     })
 );
 
@@ -99,7 +106,10 @@ router.delete(
     "/:positionId",
     auth,
     asyncMiddleware(async (req, res) => {
-        const deleted_position= await deletePosition(req.params.positionId, req.user._id);
+        const deleted_position = await deletePosition(
+            req.params.positionId,
+            req.user._id
+        );
         res.send(deleted_position);
     })
 );
@@ -108,11 +118,13 @@ router.put(
     "/:positionId",
     auth,
     asyncMiddleware(async (req, res) => {
-        const updated_position= await updatePositionById(req.body, req.params.positionId)
+        const updated_position = await updatePositionById(
+            req.body,
+            req.params.positionId
+        );
         res.send(updated_position);
     })
 );
-
 
 /**
  * @swagger
@@ -154,7 +166,7 @@ router.get(
     "/suggestions/:companyId/:positionId",
     auth,
     asyncMiddleware(async (req, res) => {
-        const company = await Company.findById(req.params.companyId);
+        const company = await Company.findById(req.params.companyId).populate("positions");
         const count = parseInt(req.query.count) ? req.query.count : 10;
         const userId = req.user._id;
 
@@ -168,42 +180,7 @@ router.get(
                     let suggestedUsers = [];
                     const pageSize = 20;
                     const totalUsers = await User.count();
-                    console.log("we have:", totalUsers, "users");
                     for (let page = 0; page * pageSize < totalUsers; page++) {
-                        // const users = await User.aggregate([
-                        //     {
-                        //         $match: {
-                        //             _id: {
-                        //                 $ne: userId,
-                        //             },
-                        //             role: "User",
-                        //         },
-                        //     },
-                        //     {
-                        //         $skip: page * pageSize,
-                        //     },
-                        //     {
-                        //         $limit: pageSize,
-                        //     },
-                        //     {
-                        //         $project: {
-                        //             _id: 1,
-                        //             firstName: 1,
-                        //             lastName: 1,
-                        //             email: 1,
-                        //             cvs: 1,
-                        //         },
-                        //     },
-                        //     {
-                        //         $lookup: {
-                        //             from: "cvs",
-                        //             localField: "cvs",
-                        //             foreignField: "_id",
-                        //             as: "cvs",
-                        //         },
-                        //     },
-                        // ]);
-
                         const users = await User.find({
                             _id: {
                                 $ne: userId,
@@ -215,7 +192,12 @@ router.get(
                             .populate("cvs");
 
                         users.forEach((currUser) => {
-                            let userScore = 0;
+                            // let userScore = 0;
+                            let currSuggestion = {
+                                user: currUser,
+                                score: 0,
+                                cvId: "",
+                            };
                             currUser.cvs.forEach((currUserCv) => {
                                 let cvScore = 0;
                                 currUserCv.tags.forEach((currTag) => {
@@ -229,16 +211,23 @@ router.get(
                                         cvScore++;
                                     }
                                 });
-                                cvScore = (cvScore / position.tags.length) * 100;
-                                if (cvScore > userScore) {
-                                    userScore = cvScore;
+                                cvScore =
+                                    (cvScore / position.tags.length) * 100;
+                                if (cvScore >= currSuggestion.score) {
+                                    currSuggestion.score = cvScore;
+                                    currSuggestion.cvId = currUserCv._id;
                                 }
                             });
+
+                            currSuggestion = {
+                                ...currSuggestion,
+                                "user.cvs": currSuggestion.user.cvs.filter(
+                                    (curr) => curr._id === currSuggestion.cvId
+                                ),
+                            };
+
                             if (suggestedUsers.length < count) {
-                                suggestedUsers.push({
-                                    user: currUser,
-                                    score: userScore,
-                                });
+                                suggestedUsers.push({ ...currSuggestion });
                             } else {
                                 const currMin = minBy(
                                     suggestedUsers,
@@ -251,8 +240,7 @@ router.get(
                                         (curr) => curr.socre === currMin.socre
                                     );
                                     suggestedUsers[minIndex] = {
-                                        user: currUser,
-                                        score: userScore,
+                                        ...currSuggestion,
                                     };
                                 }
                             }
