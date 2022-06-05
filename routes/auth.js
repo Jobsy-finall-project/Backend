@@ -31,7 +31,7 @@ function validate(req) {
       .email(),
     password: Joi.string()
       .required()
-      .min(8)
+      .min(4)
       .max(32)
       .regex(
         /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{4,}$/
