@@ -24,7 +24,7 @@ async function createApplication(application, userId, companyId) {
         position: inserted_position._doc._id,
         steps: [],
         company: companyId,
-        isMatch: false
+        isMatch: true
     });
     const inserted_application = await new_application.save();
     user._doc.applications ? user._doc.applications.push(inserted_application._doc._id) : user._doc.applications = [inserted_application._doc._id];
