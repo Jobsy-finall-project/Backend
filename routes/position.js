@@ -215,7 +215,12 @@ router.get(
                             .populate("cvs");
 
                         users.forEach((currUser) => {
-                            let userScore = 0;
+                            // let userScore = 0;
+                            const currSuggestion = {
+                                user: currUser,
+                                score: 0,
+                                cvId: ""
+                            }
                             currUser.cvs.forEach((currUserCv) => {
                                 let cvScore = 0;
                                 currUserCv.tags.forEach((currTag) => {
@@ -230,15 +235,13 @@ router.get(
                                     }
                                 });
                                 cvScore = (cvScore / position.tags.length) * 100;
-                                if (cvScore > userScore) {
-                                    userScore = cvScore;
+                                if (cvScore >= currSuggestion.score) {
+                                    currSuggestion.score = cvScore;
+                                    currSuggestion.cvId = currUserCv._id
                                 }
                             });
                             if (suggestedUsers.length < count) {
-                                suggestedUsers.push({
-                                    user: currUser,
-                                    score: userScore,
-                                });
+                                suggestedUsers.push({...currSuggestion});
                             } else {
                                 const currMin = minBy(
                                     suggestedUsers,
@@ -250,10 +253,7 @@ router.get(
                                     const minIndex = suggestedUsers.indexOf(
                                         (curr) => curr.socre === currMin.socre
                                     );
-                                    suggestedUsers[minIndex] = {
-                                        user: currUser,
-                                        score: userScore,
-                                    };
+                                    suggestedUsers[minIndex] = {...currSuggestion};
                                 }
                             }
                         });
