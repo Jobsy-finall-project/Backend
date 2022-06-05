@@ -38,7 +38,7 @@ router.get(
     "/all",
     // auth,
     asyncMiddleware(async (req, res) => {
-        const companies= await Company.find({});
+        const companies= await Company.find({}).populate("positions");
             res.send(companies);
     })
 );
