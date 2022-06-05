@@ -189,7 +189,8 @@ router.get(
                         })
                             .limit(pageSize)
                             .skip(page * pageSize)
-                            .populate("cvs");
+                            .populate("cvs").
+                            populate("applications");
 
                         users.forEach((currUser) => {
                             // let userScore = 0;
