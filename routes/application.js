@@ -94,7 +94,6 @@ router.put(
     "/:applicationId",
     auth,
     asyncMiddleware(async (req, res) => {
-        console.log({ body: req.body });
         const user = await User.findById(req.user._id);
         if (user.applications.includes(req.params.applicationId)) {
             const application = await Application.findById(
@@ -115,6 +114,54 @@ router.put(
         } else {
           res.status(404).send("application not found")
         }
+    })
+);
+
+
+router.get(
+    "/all/:positionId",
+    auth,
+    asyncMiddleware(async (req, res) => {
+        const applications = await Application.find({
+            position: req.params.positionId,
+        });
+        console.log({ applications });
+        const appsIds = applications.map((curr) => curr._id);
+        console.log({ appsIds });
+        const usersPromises = [];
+
+        appsIds.forEach((currAppId) => {
+            usersPromises.push(
+                User.find({
+                    applications: currAppId,
+                }).populate("applications")
+            );
+        });
+        const users = (await Promise.all(usersPromises)).map(
+            (currUser) => currUser[0]._doc
+        );
+        console.log({ users });
+        const resultBody = [];
+        users.forEach((currUser) => {
+            // console.log({ currUser });
+            // console.log({ applications: currUser.applications });
+            if (!resultBody.find((curr) => curr._id.toString() === currUser._id.toString())) {
+                resultBody.push({
+                    ...currUser,
+                    applications: currUser.applications.filter(
+                        (currUserApp) => {
+                            return (
+                                currUserApp.position.toString() ===
+                                req.params.positionId
+                            );
+                        }
+                    ),
+                });
+            }
+        });
+
+        // console.log({ resultBody });
+        res.send(resultBody);
     })
 );
 
