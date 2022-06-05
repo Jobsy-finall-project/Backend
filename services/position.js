@@ -12,7 +12,13 @@ async function createPosition(position, hrId, companyId){
         const { error } = validatePosition(position);
         if (error) return (error.details[0].message);
 
-        let new_position = new Position({...position, hrId});
+        const user = await User.findById(hrId);
+        let new_position;
+        if(user._doc.role.toLowerCase() ==="hr"){
+           new_position = new Position({...position, hrId});
+        }else{
+          new_position = new Position({...position});
+        }
         const inserted_position = await new_position.save();
         await addPositionToCompany(companyId, inserted_position._doc._id);
 
