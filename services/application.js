@@ -83,7 +83,7 @@ async function getAllApplicationsByUserId(userId) {
 }
 
 async function getApplicationById(applicationId) {
-    const application = await Application.findById(applicationId).populate("position");
+    const application = await Application.findById(applicationId).populate("position").populate("steps");
     return application._doc;
 }
 

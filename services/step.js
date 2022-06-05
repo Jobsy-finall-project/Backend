@@ -34,7 +34,7 @@ async function createStep(step){
     const new_step = new Step ({
         title: step.title,
         description: step.description,
-        time: new Date(),
+        time: new Date().toString(),
         comments: step.comments
     });
     const inserted_step= await new_step.save();
