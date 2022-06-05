@@ -54,7 +54,7 @@ async function createMatch(application, userId, companyId, hrId) {
         isFavorite: false,
         isActive: true,
         position: inserted_position._doc._id,
-        steps: [],
+        steps: inserted_position._doc.template,
         company: companyId,
         isMatch: false,
     });
