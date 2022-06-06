@@ -90,7 +90,7 @@ router.post(
         });
 
         axios
-            .post("http://localhost:5000/", {
+            .post(process.env.anakyzer_url + "/", {
                 name: cv.title,
                 file: cv.cvFile,
             })
