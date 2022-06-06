@@ -171,4 +171,16 @@ router.delete(
     })
 );
 
+router.get(
+    "/",
+    auth,
+    asyncMiddleware(async (req, res) => {
+        const cvs = await User.findById(req.user._id, {
+            _id: -1,
+            cvs: 1,
+        }).populate("cvs");
+        res.send(cvs);
+    })
+);
+
 module.exports = router;
