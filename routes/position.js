@@ -166,7 +166,9 @@ router.get(
     "/suggestions/:companyId/:positionId",
     auth,
     asyncMiddleware(async (req, res) => {
-        const company = await Company.findById(req.params.companyId).populate("positions");
+        const company = await Company.findById(req.params.companyId).populate(
+            "positions"
+        );
         const count = parseInt(req.query.count) ? req.query.count : 10;
         const userId = req.user._id;
 
@@ -189,42 +191,59 @@ router.get(
                         })
                             .limit(pageSize)
                             .skip(page * pageSize)
-                            .populate("cvs").
-                            populate("applications");
+                            .populate("cvs")
+                            .populate("applications");
 
                         users.forEach((currUser) => {
                             // let userScore = 0;
+                            console.log(currUser);
                             let currSuggestion = {
                                 user: currUser,
                                 score: 0,
                                 cvId: "",
                             };
-                            currUser.cvs.forEach((currUserCv) => {
-                                let cvScore = 0;
-                                currUserCv.tags.forEach((currTag) => {
-                                    if (
-                                        position.tags.some(
-                                            (currPosTag) =>
-                                                currPosTag.toLowerCase() ===
-                                                currTag.toLowerCase()
-                                        )
-                                    ) {
-                                        cvScore++;
+                            if (position.tags.length !== 0) {
+                                currUser._doc.cvs.forEach((currUserCv) => {
+                                    let cvScore = 0;
+                                    currUserCv.tags.forEach((currTag) => {
+                                        if (
+                                            position.tags.some(
+                                                (currPosTag) =>
+                                                    currPosTag.toLowerCase() ===
+                                                    currTag.toLowerCase()
+                                            )
+                                        ) {
+                                            cvScore++;
+                                        }
+                                    });
+                                    cvScore =
+                                        (cvScore / position.tags.length) * 100;
+                                    console.log({ cvScore });
+                                    console.log({
+                                        currScore: currSuggestion.score,
+                                    });
+                                    if (cvScore >= currSuggestion.score) {
+                                        currSuggestion.score = cvScore;
+                                        currSuggestion.cvId = currUserCv._id;
                                     }
                                 });
-                                cvScore =
-                                    (cvScore / position.tags.length) * 100;
-                                if (cvScore >= currSuggestion.score) {
-                                    currSuggestion.score = cvScore;
-                                    currSuggestion.cvId = currUserCv._id;
-                                }
-                            });
-
+                            } else {
+                                currSuggestion.cvId = currUser.cvs[0]._id;
+                            }
+                            
+                            console.log({ cvid: currSuggestion.cvId });
                             currSuggestion = {
                                 ...currSuggestion,
-                                "user.cvs": currSuggestion.user.cvs.filter(
-                                    (curr) => curr._id === currSuggestion.cvId
-                                ),
+                                user: {
+                                    ...currSuggestion.user._doc,
+                                    cvs: currSuggestion.user.cvs.filter(
+                                        (curr) =>
+                                            curr._id === currSuggestion.cvId
+                                    ),
+                                },
+                                // "user.cvs": currSuggestion.user.cvs.filter(
+                                //     (curr) => curr._id === currSuggestion.cvId
+                                // ),
                             };
 
                             if (suggestedUsers.length < count) {
