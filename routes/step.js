@@ -9,13 +9,20 @@ const { createStep, createStepAndAddToPosition, createStepAndAddToApplication, g
     deleteStepFromApplication, deleteStepFromPosition
 } = require("../services/step");
 const {Position} = require("../models/position");
-const {addComment} = require("../services/step");
+const {addComment, deleteComment, getAllSteps} = require("../services/step");
 const {updatePositionById} = require("../services/position");
 
 
 const router = express.Router();
 router.use(express.json());
 
+router.get(
+    "/",
+    auth,
+    asyncMiddleware(async (req, res) => {
+        const steps = await getAllSteps();
+    })
+);
 
 router.post(
     "/position/:positionId",
@@ -49,17 +56,29 @@ router.post(
       res.send(new_step);
   }));
 
-router.post(
+  router.post(
     "/comment/:stepId",
     auth,
     asyncMiddleware(async (req, res) => {
         if (!req.user._id)
             return res.status(404).send("This user is not logged in.");
 
-        const step_with_inserted_comment= await addComment(req.body.comment,req.params.stepId);
-        res.send(step_with_inserted_comment);
+        const application_with_inserted_comment= await addComment(req.body.comment,req.params.stepId);
+        res.send(application_with_inserted_comment);
+    })
+);
 
-    }));
+router.post(
+    "/comment/:stepId/delete",
+    auth,
+    asyncMiddleware(async (req, res) => {
+        if (!req.user._id)
+            return res.status(404).send("This user is not logged in.");
+
+        const application_with_inserted_comment= await deleteComment(req.body.commentIndex,req.params.stepId);
+        res.send(application_with_inserted_comment);
+    })
+);
 
 router.get(
   "/:stepId",

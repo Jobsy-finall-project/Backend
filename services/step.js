@@ -46,9 +46,20 @@ async function getStepById(stepId){
     return step;
 }
 
-async function addComment(comment, stepId){
+async function getAllSteps(stepId){
+    const step = await Step.find({})
+    return step;
+}
+
+async function addComment(comment, stepId) {
     const step= await Step.findById(stepId);
-    step._doc.comments?step._doc.comments.push(comment):step._doc.comments=[comment];
+    step._doc.comments ? step._doc.comments.push(comment) : step._doc.comments = [comment];
+    return await step.save();
+}
+
+async function deleteComment(commentIndex, stepId) {
+    const step = await Step.findById(stepId);
+    step._doc.comments.splice(commentIndex,1)
     return await step.save();
 }
 
@@ -78,4 +89,4 @@ async function deleteStepFromPosition(positionId, stepId){
 }
 
 module.exports={createStepAndAddToPosition, createStepAndAddToApplication,
-    getStepById, addComment, updateStepById, deleteStepFromApplication, deleteStepFromPosition}
+    getStepById, addComment, deleteComment, updateStepById, deleteStepFromApplication, deleteStepFromPosition, getAllSteps}
