@@ -78,7 +78,11 @@ router.post(
       req.user._id,
       req.params.companyId
     );
-    res.send(new_position);
+    console.log({ new_position });
+    if (new_position) res.send(new_position);
+    else {
+      res.send("NOTTTT WORK");
+    }
   })
 );
 
