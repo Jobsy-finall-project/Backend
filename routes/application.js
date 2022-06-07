@@ -8,7 +8,7 @@ const { validateApplication, Application } = require("../models/application");
 const {Position, validatePosition} = require("../models/position");
 const {Cv} = require("../models/cv");
 const {createPosition} = require("../services/position");
-const {createApplication, createMatch, getAllApplicationsByUserId, getApplicationById, deleteApplicationById, addComment} = require("../services/application");
+const {createApplication, createMatch, getAllApplicationsByUserId, getApplicationById, deleteApplicationById, addComment, deleteComment} = require("../services/application");
 
 
 const router = express.Router();
@@ -59,6 +59,18 @@ router.post(
             return res.status(404).send("This user is not logged in.");
 
         const application_with_inserted_comment= await addComment(req.body.comment,req.params.applicationId);
+        res.send(application_with_inserted_comment);
+    })
+);
+
+router.post(
+    "/comment/:applicationId/delete",
+    auth,
+    asyncMiddleware(async (req, res) => {
+        if (!req.user._id)
+            return res.status(404).send("This user is not logged in.");
+
+        const application_with_inserted_comment= await deleteComment(req.body.commentIndex,req.params.applicationId);
         res.send(application_with_inserted_comment);
     })
 );

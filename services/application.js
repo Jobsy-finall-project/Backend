@@ -101,5 +101,10 @@ async function addComment(comment, applicationId) {
     return await application.save();
 }
 
+async function deleteComment(commentIndex, applicationId) {
+    const application = await Application.findById(applicationId);
+    application._doc.comments.splice(commentIndex,1)
+    return await application.save();
+}
 
-module.exports = {createApplication, getAllApplicationsByUserId, getApplicationById, deleteApplicationById, addComment, createMatch};
+module.exports = {createApplication, getAllApplicationsByUserId, getApplicationById, deleteApplicationById, addComment, deleteComment, createMatch};
