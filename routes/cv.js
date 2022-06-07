@@ -90,7 +90,7 @@ router.post(
         });
 
         axios
-            .post("http://localhost:5000/", {
+            .post(process.env.anakyzer_url + "/", {
                 name: cv.title,
                 file: cv.cvFile,
             })
@@ -168,6 +168,18 @@ router.delete(
             { safe: true, upsert: true }
         );
         res.send(cvToRemove);
+    })
+);
+
+router.get(
+    "/",
+    auth,
+    asyncMiddleware(async (req, res) => {
+        const cvs = await User.findById(req.user._id, {
+            _id: -1,
+            cvs: 1,
+        }).populate("cvs");
+        res.send(cvs);
     })
 );
 
