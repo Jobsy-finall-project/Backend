@@ -78,52 +78,55 @@ router.use(express.json());
  */
 
 router.post(
-    "/",
-    auth,
-    asyncMiddleware(async (req, res) => {
-        const { error } = validateCv(req.body);
-        if (error) return res.status(400).send(error.details[0].message);
-        let cv = new Cv({
-            title: req.body.title,
-            cvFile: req.body.cvFile,
-            tags: [],
-        });
+  "/",
+  auth,
+  asyncMiddleware(async (req, res) => {
+    console.log("STEP 1");
+    const { error } = validateCv(req.body);
+    if (error) return res.status(400).send(error.details[0].message);
+    let cv = new Cv({
+      title: req.body.title,
+      cvFile: req.body.cvFile,
+      tags: []
+    });
 
-        axios
-            .post(process.env.anakyzer_url + "/", {
-                name: cv.title,
-                file: cv.cvFile,
-            })
-            .then(async (axiosRes) => {
-                if (axiosRes.status === 200) {
-                    cv.tags = axiosRes.data;
-                    const savedCv = await cv.save();
-                    let user = await User.findById(req.user._id);
-                    if (user) {
-                        if (user.cvs) {
-                            user.cvs.push(savedCv._id);
-                        } else {
-                            user.cvs = [savedCv._id];
-                        }
-                    }
-                    await user.save();
-                }
-                res.send(cv);
-            })
-            .catch(async (error) => {
-                const savedCv = await cv.save();
-                let user = await User.findById(req.user._id);
-                if (user) {
-                    if (user.cvs) {
-                        user.cvs.push(savedCv._id);
-                    } else {
-                        user.cvs = [savedCv._id];
-                    }
-                }
-                await user.save();
-                res.send(cv);
-            });
-    })
+    axios
+      .post(process.env.analyzer_url, {
+        name: cv.title,
+        file: cv.cvFile
+      })
+      .then(async axiosRes => {
+        console.log("STEP 2");
+        if (axiosRes.status === 200) {
+          cv.tags = axiosRes.data;
+          const savedCv = await cv.save();
+          let user = await User.findById(req.user._id);
+          if (user) {
+            if (user.cvs) {
+              user.cvs.push(savedCv._id);
+            } else {
+              user.cvs = [savedCv._id];
+            }
+          }
+          await user.save();
+        }
+        res.send(cv);
+      })
+      .catch(async error => {
+        console.log("STEP 3");
+        const savedCv = await cv.save();
+        let user = await User.findById(req.user._id);
+        if (user) {
+          if (user.cvs) {
+            user.cvs.push(savedCv._id);
+          } else {
+            user.cvs = [savedCv._id];
+          }
+        }
+        await user.save();
+        res.send(cv);
+      });
+  })
 );
 
 /**
@@ -145,42 +148,38 @@ router.post(
  *         description: deleted sccessfully
  */
 router.delete(
-    "/:cvId",
-    auth,
-    asyncMiddleware(async (req, res) => {
-        console.log("removing cv");
-        const idToDelete = req.params.cvId;
-        const cvToRemove = await Cv.findByIdAndRemove(idToDelete);
-        if (!cvToRemove) {
-            throw new Error(
-                "cant delete this CV because it wasn't create by you"
-            );
-        }
+  "/:cvId",
+  auth,
+  asyncMiddleware(async (req, res) => {
+    console.log("removing cv");
+    const idToDelete = req.params.cvId;
+    const cvToRemove = await Cv.findByIdAndRemove(idToDelete);
+    if (!cvToRemove) {
+      throw new Error("cant delete this CV because it wasn't create by you");
+    }
 
-        const currUser = await User.findById(req.user._id);
-        currUser.cvs = currUser.cvs.filter(
-            (currCvId) => currCvId !== idToDelete
-        );
-        // currUser.save();
-        await User.findByIdAndUpdate(
-            req.user._id,
-            { $pull: { cvs: idToDelete } },
-            { safe: true, upsert: true }
-        );
-        res.send(cvToRemove);
-    })
+    const currUser = await User.findById(req.user._id);
+    currUser.cvs = currUser.cvs.filter(currCvId => currCvId !== idToDelete);
+    // currUser.save();
+    await User.findByIdAndUpdate(
+      req.user._id,
+      { $pull: { cvs: idToDelete } },
+      { safe: true, upsert: true }
+    );
+    res.send(cvToRemove);
+  })
 );
 
 router.get(
-    "/",
-    auth,
-    asyncMiddleware(async (req, res) => {
-        const cvs = await User.findById(req.user._id, {
-            _id: -1,
-            cvs: 1,
-        }).populate("cvs");
-        res.send(cvs);
-    })
+  "/",
+  auth,
+  asyncMiddleware(async (req, res) => {
+    const cvs = await User.findById(req.user._id, {
+      _id: -1,
+      cvs: 1
+    }).populate("cvs");
+    res.send(cvs);
+  })
 );
 
 module.exports = router;

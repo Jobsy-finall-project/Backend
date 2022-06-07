@@ -9,10 +9,10 @@ const { validatePosition } = require("../models/position");
 const { User } = require("../models/user");
 const { max, minBy } = require("lodash");
 const {
-    createPosition,
-    getAllPositionsByUserId,
-    deletePosition,
-    updatePositionById,
+  createPosition,
+  getAllPositionsByUserId,
+  deletePosition,
+  updatePositionById
 } = require("../services/position");
 const { Cv } = require("../models/cv");
 const { getAllApplicationsByUserId } = require("../services/application");
@@ -67,63 +67,67 @@ router.use(express.json());
  */
 
 router.post(
-    "/:companyId",
-    auth,
-    asyncMiddleware(async (req, res) => {
-        if (!req.user._id) {
-            return res.status(404).send("This user is not logged in.");
-        }
-        let new_position = await createPosition(
-            req.body,
-            req.user._id,
-            req.params.companyId
-        );
-        res.send(new_position);
-    })
+  "/:companyId",
+  auth,
+  asyncMiddleware(async (req, res) => {
+    if (!req.user._id) {
+      return res.status(404).send("This user is not logged in.");
+    }
+    let new_position = await createPosition(
+      req.body,
+      req.user._id,
+      req.params.companyId
+    );
+    console.log({ new_position });
+    if (new_position) res.send(new_position);
+    else {
+      res.send("NOTTTT WORK");
+    }
+  })
 );
 
 router.get(
-    "/:positionId",
-    auth,
-    asyncMiddleware(async (req, res) => {
-        const position = await Position.findById(
-            req.params.positionId
-        ).populate("template");
-        res.json(position);
-    })
+  "/:positionId",
+  auth,
+  asyncMiddleware(async (req, res) => {
+    const position = await Position.findById(req.params.positionId).populate(
+      "template"
+    );
+    res.json(position);
+  })
 );
 
 router.get(
-    "/",
-    auth,
-    asyncMiddleware(async (req, res) => {
-        const positions = await getAllPositionsByUserId(req.user._id);
-        res.json(positions);
-    })
+  "/",
+  auth,
+  asyncMiddleware(async (req, res) => {
+    const positions = await getAllPositionsByUserId(req.user._id);
+    res.json(positions);
+  })
 );
 
 router.delete(
-    "/:positionId",
-    auth,
-    asyncMiddleware(async (req, res) => {
-        const deleted_position = await deletePosition(
-            req.params.positionId,
-            req.user._id
-        );
-        res.send(deleted_position);
-    })
+  "/:positionId",
+  auth,
+  asyncMiddleware(async (req, res) => {
+    const deleted_position = await deletePosition(
+      req.params.positionId,
+      req.user._id
+    );
+    res.send(deleted_position);
+  })
 );
 
 router.put(
-    "/:positionId",
-    auth,
-    asyncMiddleware(async (req, res) => {
-        const updated_position = await updatePositionById(
-            req.body,
-            req.params.positionId
-        );
-        res.send(updated_position);
-    })
+  "/:positionId",
+  auth,
+  asyncMiddleware(async (req, res) => {
+    const updated_position = await updatePositionById(
+      req.body,
+      req.params.positionId
+    );
+    res.send(updated_position);
+  })
 );
 
 /**
@@ -163,121 +167,119 @@ router.put(
  */
 
 router.get(
-    "/suggestions/:companyId/:positionId",
-    auth,
-    asyncMiddleware(async (req, res) => {
-        const company = await Company.findById(req.params.companyId).populate(
-            "positions"
-        );
-        const count = parseInt(req.query.count) ? req.query.count : 10;
-        const userId = req.user._id;
+  "/suggestions/:companyId/:positionId",
+  auth,
+  asyncMiddleware(async (req, res) => {
+    const company = await Company.findById(req.params.companyId).populate(
+      "positions"
+    );
+    const count = parseInt(req.query.count) ? req.query.count : 10;
+    const userId = req.user._id;
 
-        if (company) {
-            if (company.positions) {
-                const position = company.positions.find(
-                    (position) => position._id == req.params.positionId
+    if (company) {
+      if (company.positions) {
+        const position = company.positions.find(
+          position => position._id == req.params.positionId
+        );
+
+        if (position) {
+          let suggestedUsers = [];
+          const pageSize = 20;
+          const totalUsers = await User.count();
+          for (let page = 0; page * pageSize < totalUsers; page++) {
+            const users = await User.find({
+              _id: {
+                $ne: userId
+              },
+              role: "Candidate"
+            })
+              .limit(pageSize)
+              .skip(page * pageSize)
+              .populate("cvs")
+              .populate("applications");
+
+            users.forEach(currUser => {
+              // let userScore = 0;
+              console.log(currUser);
+              let currSuggestion = {
+                user: currUser,
+                score: 0,
+                cvId: ""
+              };
+              if (position.tags.length !== 0) {
+                currUser._doc.cvs.forEach(currUserCv => {
+                  let cvScore = 0;
+                  currUserCv.tags.forEach(currTag => {
+                    if (
+                      position.tags.some(
+                        currPosTag =>
+                          currPosTag.toLowerCase() === currTag.toLowerCase()
+                      )
+                    ) {
+                      cvScore++;
+                    }
+                  });
+                  cvScore = (cvScore / position.tags.length) * 100;
+                  console.log({ cvScore });
+                  console.log({
+                    currScore: currSuggestion.score
+                  });
+                  if (cvScore >= currSuggestion.score) {
+                    currSuggestion.score = cvScore;
+                    currSuggestion.cvId = currUserCv._id;
+                  }
+                });
+              } else {
+                currUser.cvs.length > 0
+                  ? (currSuggestion.cvId = currUser.cvs[0]._id)
+                  : "";
+              }
+
+              console.log({ cvid: currSuggestion.cvId });
+              currSuggestion = {
+                ...currSuggestion,
+                user: {
+                  ...currSuggestion.user._doc,
+                  cvs: currSuggestion.user.cvs.filter(
+                    curr => curr._id === currSuggestion.cvId
+                  )
+                }
+                // "user.cvs": currSuggestion.user.cvs.filter(
+                //     (curr) => curr._id === currSuggestion.cvId
+                // ),
+              };
+
+              if (suggestedUsers.length < count) {
+                suggestedUsers.push({ ...currSuggestion });
+              } else {
+                const currMin = minBy(
+                  suggestedUsers,
+                  currUserSuggestion => currUserSuggestion.score
                 );
 
-                if (position) {
-                    let suggestedUsers = [];
-                    const pageSize = 20;
-                    const totalUsers = await User.count();
-                    for (let page = 0; page * pageSize < totalUsers; page++) {
-                        const users = await User.find({
-                            _id: {
-                                $ne: userId,
-                            },
-                            role: "Candidate",
-                        })
-                            .limit(pageSize)
-                            .skip(page * pageSize)
-                            .populate("cvs")
-                            .populate("applications");
-
-                        users.forEach((currUser) => {
-                            // let userScore = 0;
-                            console.log(currUser);
-                            let currSuggestion = {
-                                user: currUser,
-                                score: 0,
-                                cvId: "",
-                            };
-                            if (position.tags.length !== 0) {
-                                currUser._doc.cvs.forEach((currUserCv) => {
-                                    let cvScore = 0;
-                                    currUserCv.tags.forEach((currTag) => {
-                                        if (
-                                            position.tags.some(
-                                                (currPosTag) =>
-                                                    currPosTag.toLowerCase() ===
-                                                    currTag.toLowerCase()
-                                            )
-                                        ) {
-                                            cvScore++;
-                                        }
-                                    });
-                                    cvScore =
-                                        (cvScore / position.tags.length) * 100;
-                                    console.log({ cvScore });
-                                    console.log({
-                                        currScore: currSuggestion.score,
-                                    });
-                                    if (cvScore >= currSuggestion.score) {
-                                        currSuggestion.score = cvScore;
-                                        currSuggestion.cvId = currUserCv._id;
-                                    }
-                                });
-                            } else {
-                                currSuggestion.cvId = currUser.cvs[0]._id;
-                            }
-                            
-                            console.log({ cvid: currSuggestion.cvId });
-                            currSuggestion = {
-                                ...currSuggestion,
-                                user: {
-                                    ...currSuggestion.user._doc,
-                                    cvs: currSuggestion.user.cvs.filter(
-                                        (curr) =>
-                                            curr._id === currSuggestion.cvId
-                                    ),
-                                },
-                                // "user.cvs": currSuggestion.user.cvs.filter(
-                                //     (curr) => curr._id === currSuggestion.cvId
-                                // ),
-                            };
-
-                            if (suggestedUsers.length < count) {
-                                suggestedUsers.push({ ...currSuggestion });
-                            } else {
-                                const currMin = minBy(
-                                    suggestedUsers,
-                                    (currUserSuggestion) =>
-                                        currUserSuggestion.score
-                                );
-
-                                if (currMin.score < userScore) {
-                                    const minIndex = suggestedUsers.indexOf(
-                                        (curr) => curr.socre === currMin.socre
-                                    );
-                                    suggestedUsers[minIndex] = {
-                                        ...currSuggestion,
-                                    };
-                                }
-                            }
-                        });
-                    }
-                    suggestedUsers.sort((a, b) => b.score - a.score);
-                    res.send(suggestedUsers);
-                } else {
-                    res.status(404).send("The givan position ID was not found");
+                if (currMin.score < userScore) {
+                  const minIndex = suggestedUsers.indexOf(
+                    curr => curr.socre === currMin.socre
+                  );
+                  suggestedUsers[minIndex] = {
+                    ...currSuggestion
+                  };
                 }
-            } else {
-                res.status(404).send("This company was not have positions");
-            }
+              }
+            });
+          }
+          suggestedUsers.sort((a, b) => b.score - a.score);
+          res.send(suggestedUsers);
         } else {
-            res.status(404).send("The givan company ID was not found");
+          res.status(404).send("The givan position ID was not found");
         }
-    })
+      } else {
+        res.status(404).send("This company was not have positions");
+      }
+    } else {
+      res.status(404).send("The givan company ID was not found");
+    }
+  })
 );
 
 module.exports = router;
