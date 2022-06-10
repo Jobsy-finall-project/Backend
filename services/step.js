@@ -26,7 +26,6 @@ async function createStepAndAddToApplication(step, applicationId){
 }
 
 async function createStep(step){
-    step.time=new Date();
     const { error } = validateStep(step);
     if (error) return (error.details[0].message);
 
@@ -34,7 +33,7 @@ async function createStep(step){
     const new_step = new Step ({
         title: step.title,
         description: step.description,
-        time: new Date().toString(),
+        time: step.time,
         comments: step.comments
     });
     const inserted_step= await new_step.save();
