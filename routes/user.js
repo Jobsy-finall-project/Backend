@@ -6,7 +6,7 @@ const express = require("express");
 const { User } = require("../models/user");
 const { validateUser } = require("../models/user");
 const bcrypt = require("bcrypt");
-const {createUser} = require("../services/user");
+const {createUser, intersectionTags} = require("../services/user");
 
 const router = express.Router();
 
