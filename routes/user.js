@@ -29,7 +29,7 @@ router.get("/", [auth, admin], async (req, res) => {
 
 router.get("/tags/:userId/positionId", auth, async (req, res) => {
   const tags = await intersectionTags(req.params.userId, req.params.positionId);
-  res.send(users);
+  res.send(tags);
 });
 
 router.get("/me" ,auth, async (req, res) => {
