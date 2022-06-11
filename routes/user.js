@@ -1,60 +1,83 @@
 const validateObjectId = require("../middleware/validateObjectId");
 const auth = require("../middleware/auth");
-const { admin, hr, user} = require("../middleware/role");
+const { admin, hr, user } = require("../middleware/role");
 const _ = require("lodash");
 const express = require("express");
 const { User } = require("../models/user");
 const { validateUser } = require("../models/user");
 const bcrypt = require("bcrypt");
-const {createUser} = require("../services/user");
+const { createUser, intersectionTags } = require("../services/user");
 
 const router = express.Router();
 
 router.post("/", async (req, res) => {
-try {
-  const {token, inserted_user} = await createUser(req.body);
-  res
+  try {
+    const { token, inserted_user } = await createUser(req.body);
+    res
       .header("x-auth-token", token)
-      .send(_.pick(inserted_user, ["_id", "firstName", "lastName", "userName", "email"]));
-}catch (error){
-  res.status(400).send(error.message);
-}
-
+      .send(
+        _.pick(inserted_user, [
+          "_id",
+          "firstName",
+          "lastName",
+          "userName",
+          "email"
+        ])
+      );
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
 });
 
 router.get("/", [auth, admin], async (req, res) => {
-  const users = await User.find().populate("applications").populate("cvs");
+  const users = await User.find()
+    .populate("applications")
+    .populate("cvs");
   res.send(users);
 });
 
-router.get("/me" ,auth, async (req, res) => {
+router.get("/tags/:userId/:positionId/:cvId", auth, async (req, res) => {
+  const tags = await intersectionTags(
+    req.params.userId,
+    req.params.positionId,
+    req.params.cvId
+  );
+  res.send(tags);
+});
 
-  const user = await User.findById({ _id: req.user._id }).populate("applications")
-      .populate({
-        path:"company",
-         populate:{
-             path:"positions",
-              model:"Position"
-  }}).select("-password");
+router.get("/me", auth, async (req, res) => {
+  const user = await User.findById({ _id: req.user._id })
+    .populate("applications")
+    .populate({
+      path: "company",
+      populate: {
+        path: "positions",
+        model: "Position"
+      }
+    })
+    .select("-password");
   if (user) return res.send(user);
   return res.status(404).send("The user with the given token was not found");
 });
 
-router.get("/me" ,auth, async (req, res) => {
-
+router.get("/me", auth, async (req, res) => {
   const user = await User.findById({ _id: req.user._id })
-      .populate({
-        path:"company",
-        populate:{
-          path:"positions",
-          model:"Position"
-        }}).select("-password");
+    .populate({
+      path: "company",
+      populate: {
+        path: "positions",
+        model: "Position"
+      }
+    })
+    .select("-password");
   if (user) return res.send(user);
   return res.status(404).send("The user with the given token was not found");
 });
 
 router.get("/:id", [validateObjectId, auth, admin], async (req, res) => {
-  const user = await User.findById({ _id: req.params.id }).select("-password").populate("applications");
+  const user = await User.findById({ _id: req.params.id })
+    .select("-password")
+    .populate("applications");
   if (user) return res.send(user);
   return res.status(404).send("The user with the given ID was not found");
 });
@@ -116,8 +139,8 @@ router.put("/:id", [validateObjectId, auth, admin], async (req, res) => {
         email: req.body.email,
         password: req.body.password,
         role: req.body.role,
-        applications:[],
-        cvs:[]
+        applications: [],
+        cvs: []
       }
     },
     { new: true }
