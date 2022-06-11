@@ -27,6 +27,11 @@ router.get("/", [auth, admin], async (req, res) => {
   res.send(users);
 });
 
+router.get("/tags/:userId/positionId", auth, async (req, res) => {
+  const tags = await intersectionTags(req.params.userId, req.params.positionId);
+  res.send(users);
+});
+
 router.get("/me" ,auth, async (req, res) => {
 
   const user = await User.findById({ _id: req.user._id }).populate("applications")

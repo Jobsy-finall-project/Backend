@@ -46,4 +46,20 @@ async function createUser(user){
 
 }
 
-module.exports={createUser}
+function performIntersection(arr1, arr2) {
+    const intersectionResult = arr1.filter(x => arr2.indexOf(x) !== -1);
+    return intersectionResult;
+}
+
+async function intersectionTags(userId, positionId){
+    const curUser = await User.findById(userId).populate("cvFile");
+    const userTags = curUser._doc.cvFile.tags;
+    const curPosition = await Position.findById(positionId);
+    const poaitionTags = curPosition._doc.tags;
+    const result = performIntersection(userTags, poaitionTags);
+    return result;
+}
+
+
+
+module.exports={createUser, intersectionTags}
