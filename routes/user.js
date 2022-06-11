@@ -74,7 +74,7 @@ router.get("/me", auth, async (req, res) => {
   return res.status(404).send("The user with the given token was not found");
 });
 
-router.get("/:id", [validateObjectId, auth, admin], async (req, res) => {
+router.get("/:id", async (req, res) => {
   const user = await User.findById({ _id: req.params.id })
     .select("-password")
     .populate("applications");
