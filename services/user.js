@@ -3,6 +3,7 @@ const {User, validateUser} = require("../models/user");
 const bcrypt = require("bcrypt");
 const {createCompany} = require("./company");
 const mongoose = require("mongoose");
+const {Position} = require("../models/position");
 
 
 async function createUser(user){
@@ -52,11 +53,11 @@ function performIntersection(arr1, arr2) {
 }
 
 async function intersectionTags(userId, positionId){
-    const curUser = await User.findById(userId).populate("cvFile");
-    const userTags = curUser._doc.cvFile.tags;
+    const curUser = await User.findById(userId).populate("cv");
+    const userTags = curUser._doc.cv[0].tags;
     const curPosition = await Position.findById(positionId);
-    const poaitionTags = curPosition._doc.tags;
-    const result = performIntersection(userTags, poaitionTags);
+    const positionTags = curPosition._doc.tags;
+    const result = performIntersection(userTags, positionTags);
     return result;
 }
 
