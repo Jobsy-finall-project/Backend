@@ -34,9 +34,6 @@ router.post(
         if (!req.user._id) {
             return res.status(404).send("This user is not logged in.");
         }
-        console.log({ body: req.body });
-        console.log({ position: req.body.application.position });
-        console.log({ params: req.params });
         const userIds = req.body.users;
         const promises = userIds.map((currUserId) => {
             return createMatch(
@@ -112,7 +109,7 @@ router.put(
                 req.params.applicationId
             );
 
-            if (req.body.isFavorite) {
+            if (req.body.hasOwnProperty('isFavorite')) {
                 application.isFavorite = req.body.isFavorite;
             }
             if (req.body.isActive) {
@@ -137,9 +134,7 @@ router.get(
         const applications = await Application.find({
             position: req.params.positionId,
         });
-        console.log({ applications });
         const appsIds = applications.map((curr) => curr._id);
-        console.log({ appsIds });
         const usersPromises = [];
 
         appsIds.forEach((currAppId) => {
@@ -152,7 +147,6 @@ router.get(
         const users = (await Promise.all(usersPromises)).map(
             (currUser) => currUser[0]._doc
         );
-        console.log({ users });
         const resultBody = [];
         users.forEach((currUser) => {
             // console.log({ currUser });
