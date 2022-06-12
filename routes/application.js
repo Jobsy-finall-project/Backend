@@ -141,7 +141,19 @@ router.get(
             usersPromises.push(
                 User.find({
                     applications: currAppId,
-                }).populate("applications")
+                }).populate({
+                    path: "applications",
+                    populate: [
+                        {
+                            path: "position",
+                            model: "Position",
+                        },
+                        {
+                            path: "company",
+                            model: "Company",
+                        },
+                    ],
+                })
             );
         });
         const users = (await Promise.all(usersPromises)).map(
@@ -149,15 +161,13 @@ router.get(
         );
         const resultBody = [];
         users.forEach((currUser) => {
-            // console.log({ currUser });
-            // console.log({ applications: currUser.applications });
             if (!resultBody.find((curr) => curr._id.toString() === currUser._id.toString())) {
                 resultBody.push({
                     ...currUser,
                     applications: currUser.applications.filter(
                         (currUserApp) => {
                             return (
-                                currUserApp.position.toString() ===
+                                currUserApp.position._id.toString() ===
                                 req.params.positionId
                             );
                         }
@@ -166,7 +176,6 @@ router.get(
             }
         });
 
-        // console.log({ resultBody });
         res.send(resultBody);
     })
 );
