@@ -46,7 +46,9 @@
     "winston-mongodb": "^3.0.0"
   },
   "devDependencies": {
-    "jest": "^27.4.7",
+    "@shelf/jest-mongodb": "^4.0.0",
+    "jest": "^27.5.1",
+    "mockingoose": "^2.15.2",
     "nodemon": "^2.0.15",
     "supertest": "^3.0.0"
   },

@@ -63,7 +63,10 @@ async function deleteComment(commentIndex, stepId) {
 }
 
 async function updateStepById(newDetailes, stepId){
-    const step= await Step.findByIdAndUpdate(stepId,{...newDetailes})
+    const step = await Step.findByIdAndUpdate(stepId,{...newDetailes})
+    console.log('====================================');
+    console.log(step);
+    console.log('====================================');
     const updated_step= await Step.findById(step._doc._id);
     return updated_step;
 
