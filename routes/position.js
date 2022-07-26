@@ -24,6 +24,26 @@ router.use(express.json());
  * @swagger
  * components:
  *   schemas:
+ *     Position:
+ *       type: object
+ *       properties:
+ *         _id:
+ *           type: string
+ *           required: true
+ *         name:
+ *           type: string
+ *           required: true
+ *         description:
+ *           type: string
+ *           required: true
+ *         tags:
+ *           type: array
+ *           items:
+ *             type: string
+ *           required: true
+ *         template:
+ *           type: string
+ *           required: true
  *     Cv:
  *       type: object
  *       properties:
@@ -66,6 +86,37 @@ router.use(express.json());
  *   description: Positions in the system
  */
 
+
+/**
+ * @swagger
+ * /positions/{companyId}:
+ *   post:
+ *     summary: create new position to company
+ *     tags: [positions]
+ *     parameters:
+ *       - in : path
+ *         name: companyId
+ *         description: id of the company
+ *         schema:
+ *           type: string
+ *         required: true
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Position'
+ *     responses:
+ *       200:
+ *         description: the created company
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items: 
+ *                 $ref: '#/components/schemas/Position'
+ *                 
+ */
 router.post(
   "/:companyId",
   auth,
@@ -85,7 +136,28 @@ router.post(
     }
   })
 );
-
+/**
+ * @swagger
+ * /positions/{positionId}:
+ *   get:
+ *     summary: get postion by id
+ *     tags: [positions]
+ *     parameters:
+ *       - in : path
+ *         name: positionId
+ *         description: id of the position
+ *         schema:
+ *           type: string
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: requested position
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Position'
+ *                 
+ */
 router.get(
   "/:positionId",
   auth,
@@ -97,6 +169,23 @@ router.get(
   })
 );
 
+/**
+ * @swagger
+ * /positions:
+ *   get:
+ *     summary: get all positions of the current user
+ *     tags: [positions]
+ *     responses:
+ *       200:
+ *         description: the list of all positions
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items: 
+ *                 $ref: '#/components/schemas/Position'
+ *                 
+ */
 router.get(
   "/",
   auth,
@@ -106,6 +195,27 @@ router.get(
   })
 );
 
+/**
+ * @swagger
+ * /positions/{positionId}:
+ *   delete:
+ *     summary: delete the podition id
+ *     tags: [positions]
+ *     parameters:
+ *       - in : path
+ *         name: positionId
+ *         description: id of the position
+ *         schema:
+ *           type: string
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: the deleted position
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Position'
+ */
 router.delete(
   "/:positionId",
   auth,
@@ -117,7 +227,33 @@ router.delete(
     res.send(deleted_position);
   })
 );
-
+/**
+ * @swagger
+ * /positions/{positionId}:
+ *   put:
+ *     summary: edits the podition id
+ *     tags: [positions]
+ *     parameters:
+ *       - in : path
+ *         name: positionId
+ *         description: id of the position
+ *         schema:
+ *           type: string
+ *         required: true
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Position'
+ *     responses:
+ *       200:
+ *         description: the updated position
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Position'
+ */
 router.put(
   "/:positionId",
   auth,
