@@ -114,6 +114,22 @@ router.use(express.json());
  *           type: array
  *           items:
  *             $ref: '#/components/schemas/Cv'
+ *     Company:
+ *       type: object
+ *       properties:
+ *         _id:
+ *           type: string
+ *           required: true
+ *         name:
+ *           type: string
+ *           required: true
+ *         description:
+ *           type: string
+ *           required: true
+ *         positions:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/Position'
  */
 
 /**
